@@ -1,0 +1,27 @@
+## Python
+*.pyc
+
+.ipynb_checkpoints
+
+## Latex
+*.out
+*.log
+*.aux
+*.synctex.gz
+*.toc
+
+
+## Bibtex
+*.bbl
+*.brf
+*.blg
+
+
+## Text editor
+*~
+
+
+doc/*.pdf
+
+## Don't look in the attic!
+attic
