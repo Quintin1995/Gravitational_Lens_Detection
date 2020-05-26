@@ -83,13 +83,13 @@ def main(
                 num_chunks=params.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                augmentation_params=default_augmentation_params,
+                augmentation_params=params.default_augmentation_params,
             )
             augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg_col(
                 num_chunks=params.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                augmentation_params=default_augmentation_params,
+                augmentation_params=params.default_augmentation_params,
             )
 
         else:
@@ -205,7 +205,7 @@ def main(
             ):
                 X_test = chunk_data_test
                 X_test = X_test[0]
-                X_test = X_test / 255.0 - avg_img
+                X_test = X_test / 255.0 - params.avg_img
                 pred1 = multi_model.predict(X_test)
                 preds = pred1.tolist()
                 predictions = predictions + preds
