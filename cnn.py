@@ -173,11 +173,11 @@ def main(
                 target_sizes=input_sizes
             )
 
-        multi_model.load_weights(model_name + "_weights_only.h5")
+        multi_model.load_weights(params.full_path_of_weights)
 
         predictions = []
         test_batches = 0
-        if params.augm_pred == True:
+        if params.augm_pred == True:            #seems to be a boolean to control whether you want the test data to be augmented or not when performing a prediction on test data.
             start_time = time.time()
             for e, (chunk_data_test, chunk_length_test) in enumerate(
                 augmented_data_gen_test_fixed
