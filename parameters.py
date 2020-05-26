@@ -3,7 +3,7 @@ from utils import *
 
 class Parameters(object):
     def __init__(self, settings):
-        #hyper parameters
+        # Hyper parameters
         self.model_name      = settings["model_name"]  # for example "first_model" must be something unique
         self.num_chunks      = settings["num_chunks"]
         self.chunk_size      = settings["chunk_size"]
@@ -11,23 +11,32 @@ class Parameters(object):
         self.num_batch_augm  = settings["num_batch_augm"]
         self.input_sizes     = [(settings["img_rows"], settings["img_cols"])]
 
-        #other parameters
+        # Other parameters
         self.nbands          = settings["nbands"]
         self.normalize       = settings["normalize"]   # normalize the images to max of 255 (valid for single-band only)
         self.augm_pred       = settings["augm_pred"]
         self.learning_rate   = settings["learning_rate"]
         self.resize          = settings["resize"]
         
-        #more parameters
+        # More parameters
         self.range_min       = settings["range_min"]
         self.range_max       = settings["range_max"]
 
-        #more parameters
+        # More parameters
         self.buffer_size     = settings["buffer_size"]
         self.avg_img         = settings["avg_img"]
 
-        #even more params
+        # Even more params
         self.input_shape     = (self.input_sizes[0][0], self.input_sizes[0][1], 3)
+
+        # Default Augmentation Params           This dictionary holds all default data augmentation parameters
+        self.default_augmentation_params = {
+            "zoom_range": (settings["zoom_range_min"], settings["zoom_range_max"]),
+            "rotation_range": (settings["rotation_range_min"], settings["rotation_range_max"]),
+            "shear_range": (settings["shear_range_min"], settings["shear_range_max"]),
+            "translation_range": (settings["translation_range_min"], settings["translation_range_max"]),
+            "do_flip": settings["do_flip"],
+        }
 
         #path stuff
         self.root_dir_models        = settings["root_dir_models"]

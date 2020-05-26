@@ -1,16 +1,43 @@
 from datetime import datetime
 import matplotlib.pyplot as plt
 import yaml
+import numpy as np
+import resnet
+
+
+
+def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
+    assert len(inputs) == len(targets)
+    if shuffle:
+        indices = np.arange(len(inputs))
+        np.random.shuffle(indices)
+    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
+        if shuffle:
+            excerpt = indices[start_idx : start_idx + batchsize]
+        else:
+            excerpt = slice(start_idx, start_idx + batchsize)
+        yield inputs[excerpt], targets[excerpt]
+
+
+def build_resnet(parameters):
+    model = resnet.ResnetBuilder.build_resnet_18(parameters.input_shape, 1)  # 18
+    return model
+
+
+def call_model(parameters, model="resnet"):
+    if model == "resnet":
+        multi_model = build_resnet(parameters)
+    return multi_model
 
 
 def load_run_yaml(yaml_run_path):
-    #open run.yaml and load all the settings into a dictionary.
+    #opens run.yaml and load all the settings into a dictionary.
     with open(yaml_run_path) as file:
         settings = yaml.load(file)
         print("\nSettings:")
         for i in settings:
             print(str(i) + ": " + str(settings[i]))
-        print("\n\n")
+        print("all settings loaded.\n\n")
         return settings
 
 
