@@ -1,0 +1,12 @@
+# settings.yaml file
+# This file contains all settings for a model to run.
+
+
+model_name: first_model     # string
+num_chunks: 2000            # int
+chunk_size: 1280            # int
+batch_size: 64              # int
+num_batch_augm: 20          # int
+img_rows: 101               # int
+img_cols: 101               # int
+root_dir_models: models     # string

@@ -39,9 +39,15 @@ import augmentation as ra
 import argparse
 import pickle
 from datetime import datetime
+import json
+import yaml
+from parameters import Parameters
 
 
 # PARAMETERS###########################
+
+
+
 input_sizes = [(101, 101)]  # size of the input images
 
 default_augmentation_params = {
@@ -52,11 +58,7 @@ default_augmentation_params = {
     "do_flip": True,
 }
 
-num_chunks = 2000
-# num_chunks=10
-chunk_size = 1280
-batch_size = 64
-num_batch_augm = 20
+
 nbands = 1
 normalize = True  # normalize the images to max of 255 (valid for single-band only)
 augm_pred = True
@@ -76,6 +78,18 @@ test_path = ra.test_path
 test_data = ra.test_data
 
 
+#open run.yaml and load all the settings into a dictionary.
+with open("runs/run.yaml") as file:
+    settings = yaml.load(file)
+    print(settings)
+
+
+#load all the parameters from settings dictionary into a parameter class.
+p = Parameters(settings)
+
+
+
+
 def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
     assert len(inputs) == len(targets)
     if shuffle:
@@ -90,13 +104,11 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 
 def build_resnet():
-
     model = resnet.ResnetBuilder.build_resnet_18(input_shape, 1)  # 18
     return model
 
 
 def call_model(model="resnet"):
-
     if model == "resnet":
         multi_model = build_resnet()
 
@@ -105,15 +117,15 @@ def call_model(model="resnet"):
 
 def main(
     model="resnet",
-    mode="predict",
-    num_chunks=num_chunks,
+    mode="train",
+    num_chunks=p.num_chunks,
     chunk_size=chunk_size,
     input_sizes=input_sizes,
     batch_size=batch_size,
     nbands=nbands,
     model_name=model_name,
 ):
-    mode = "train"
+    
     multi_model = call_model(model=model)
 
     if mode == "train":
@@ -128,13 +140,13 @@ def main(
 
         if nbands == 3:
             augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos_col(
-                num_chunks=num_chunks,
+                num_chunks=p.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
                 augmentation_params=default_augmentation_params,
             )
             augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg_col(
-                num_chunks=num_chunks,
+                num_chunks=p.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
                 augmentation_params=default_augmentation_params,
@@ -144,7 +156,7 @@ def main(
             augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos(
                 range_min=range_min,
                 range_max=range_max,
-                num_chunks=num_chunks,
+                num_chunks=p.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
                 normalize=normalize,
@@ -152,7 +164,7 @@ def main(
                 augmentation_params=default_augmentation_params,
             )
             augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg(
-                num_chunks=num_chunks,
+                num_chunks=p.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
                 normalize=normalize,
@@ -168,7 +180,7 @@ def main(
         )
         actual_begin_time = time.time()
         try:
-            for chunk in range(num_chunks):
+            for chunk in range(p.num_chunks):
                 start_time = time.time()
                 chunk_data_pos, chunk_length = next(train_gen_pos)
                 y_train_pos = chunk_data_pos.pop()
@@ -192,7 +204,7 @@ def main(
                     batches += 1
                 X_train = None
                 y_train = None
-                print("Chunck {}/{} has been trained".format(chunk, num_chunks))
+                print("Chunck {}/{} has been trained".format(chunk, p.num_chunks))
                 print("Chunck took {0:.3f} seconds".format(time.time() - start_time))
 
         except KeyboardInterrupt:
@@ -286,3 +298,4 @@ f.write(x)
 f.close()
 
 print("Dati salvati nel file pred_my_model.csv")
+print("Translation:\nData saved in the file pred_my_model.csv")
