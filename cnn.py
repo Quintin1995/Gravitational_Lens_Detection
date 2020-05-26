@@ -50,6 +50,7 @@ settings = load_run_yaml("runs/run.yaml")
 # load all the parameters from settings dictionary into a parameter class.
 params = Parameters(settings)
 
+#test path and data - loading from augmenation.py
 test_path = ra.test_path
 test_data = ra.test_data
 
@@ -144,24 +145,19 @@ def main(
                     batches += 1
                 X_train = None
                 y_train = None
-                print("Chunck {}/{} has been trained".format(chunk, params.num_chunks))
+                print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks))
                 print("Chunck took {0:.3f} seconds".format(time.time() - start_time))
 
         except KeyboardInterrupt:
-            # multi_model.save(model_name+'_last.h5')
-            now = datetime.now()
-            dt_string = now.strftime("%d_%m_%Y_%Hh_%Mm_%Ss")
-            multi_model.save_weights(
-                model_name + "_weights_only{}.h5".format(dt_string)
-            )
-            print("interrupted!")
-            print("saved weights")
+            multi_model.save_weights(params.full_path_of_weights)
+            print("interrupted by KEYBOARD!")
+            print("saved weights to: {}".format(params.full_path_of_weights))
 
         end_time = time.time()
 
-        # multi_model.save(model_name+'_last.h5')
-        multi_model.save_weights(model_name + "_weights_only.h5")
-        print("time employed ", end_time - actual_begin_time)
+        multi_model.save_weights(params.full_path_of_weights)
+        print("\nsaved weights to: {}".format(params.full_path_of_weights))
+        print("Total time employed ", end_time - actual_begin_time)
 
     if mode == "predict":
         if nbands == 3:

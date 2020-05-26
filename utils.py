@@ -34,10 +34,10 @@ def load_run_yaml(yaml_run_path):
     #opens run.yaml and load all the settings into a dictionary.
     with open(yaml_run_path) as file:
         settings = yaml.load(file)
-        print("\nSettings:")
+        print("\nSettings: {}".format(yaml_run_path))
         for i in settings:
             print(str(i) + ": " + str(settings[i]))
-        print("all settings loaded.\n\n")
+        print("\nAll settings loaded.\n\n")
         return settings
 
 
