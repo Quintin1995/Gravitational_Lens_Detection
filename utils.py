@@ -1,10 +1,22 @@
 from datetime import datetime
 import matplotlib.pyplot as plt
+import yaml
+
+
+def load_run_yaml(yaml_run_path):
+    #open run.yaml and load all the settings into a dictionary.
+    with open(yaml_run_path) as file:
+        settings = yaml.load(file)
+        print("\nSettings:")
+        for i in settings:
+            print(str(i) + ": " + str(settings[i]))
+        print("\n\n")
+        return settings
+
 
 def get_time_string():
     now = datetime.now()
     return now.strftime("%d_%m_%Y_%Hh_%Mm_%Ss")
-
 
 
 # Define a nice plot function for the accuracy and loss over time

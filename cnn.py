@@ -40,16 +40,17 @@ import argparse
 import pickle
 from datetime import datetime
 import json
-import yaml
 from parameters import Parameters
+from utils import *
 
 
-# PARAMETERS###########################
+# load the settings dictionary in order to start a run.
+settings = load_run_yaml("runs/run.yaml")
 
+# load all the parameters from settings dictionary into a parameter class.
+p = Parameters(settings)
 
-
-input_sizes = [(101, 101)]  # size of the input images
-
+############### extra parameters #########################
 default_augmentation_params = {
     "zoom_range": (1 / 1.1, 1.0),
     "rotation_range": (0, 180),
@@ -58,37 +59,14 @@ default_augmentation_params = {
     "do_flip": True,
 }
 
-
-nbands = 1
-normalize = True  # normalize the images to max of 255 (valid for single-band only)
-augm_pred = True
-# load_model=
-model_name = "baseline_model"
-learning_rate = 0.0001
-resize = False
-
-range_min = 0.02
-range_max = 0.30
-
-########################################
-buffer_size = 10
-avg_img = 0
-input_shape = (input_sizes[0][0], input_sizes[0][1], 3)
 test_path = ra.test_path
 test_data = ra.test_data
 
 
-#open run.yaml and load all the settings into a dictionary.
-with open("runs/run.yaml") as file:
-    settings = yaml.load(file)
-    print(settings)
-
-
-#load all the parameters from settings dictionary into a parameter class.
-p = Parameters(settings)
 
 
 
+############# functions #####################
 
 def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
     assert len(inputs) == len(targets)
@@ -104,7 +82,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 
 def build_resnet():
-    model = resnet.ResnetBuilder.build_resnet_18(input_shape, 1)  # 18
+    model = resnet.ResnetBuilder.build_resnet_18(p.input_shape, 1)  # 18
     return model
 
 
@@ -119,18 +97,18 @@ def main(
     model="resnet",
     mode="train",
     num_chunks=p.num_chunks,
-    chunk_size=chunk_size,
-    input_sizes=input_sizes,
-    batch_size=batch_size,
-    nbands=nbands,
-    model_name=model_name,
+    chunk_size=p.chunk_size,
+    input_sizes=p.input_sizes,
+    batch_size=p.batch_size,
+    nbands=p.nbands,
+    model_name=p.model_name,
 ):
     
     multi_model = call_model(model=model)
 
     if mode == "train":
 
-        loss = optimizers.Adam(lr=learning_rate)
+        loss = optimizers.Adam(lr=p.learning_rate)
 
         multi_model.compile(
             optimizer=loss,
@@ -154,29 +132,29 @@ def main(
 
         else:
             augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos(
-                range_min=range_min,
-                range_max=range_max,
+                range_min=p.range_min,
+                range_max=p.range_max,
                 num_chunks=p.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                normalize=normalize,
-                resize=resize,
+                normalize=p.normalize,
+                resize=p.resize,
                 augmentation_params=default_augmentation_params,
             )
             augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg(
                 num_chunks=p.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                normalize=normalize,
-                resize=resize,
+                normalize=p.normalize,
+                resize=p.resize,
                 augmentation_params=default_augmentation_params,
             )
 
         train_gen_neg = load_data.buffered_gen_mp(
-            augmented_data_gen_neg, buffer_size=buffer_size
+            augmented_data_gen_neg, buffer_size=p.buffer_size
         )
         train_gen_pos = load_data.buffered_gen_mp(
-            augmented_data_gen_pos, buffer_size=buffer_size
+            augmented_data_gen_pos, buffer_size=p.buffer_size
         )
         actual_begin_time = time.time()
         try:
@@ -200,7 +178,7 @@ def main(
                     X_train, y_train, batch_size, shuffle=True
                 ):
                     X_batch, y_batch = batch
-                    train = multi_model.fit(X_batch / 255.0 - avg_img, y_batch)
+                    train = multi_model.fit(X_batch / 255.0 - p.avg_img, y_batch)
                     batches += 1
                 X_train = None
                 y_train = None
@@ -237,14 +215,14 @@ def main(
 
         predictions = []
         test_batches = 0
-        if augm_pred == True:
+        if p.augm_pred == True:
             start_time = time.time()
             for e, (chunk_data_test, chunk_length_test) in enumerate(
                 augmented_data_gen_test_fixed
             ):
                 X_test = chunk_data_test
                 X_test = X_test[0]
-                X_test = X_test / 255.0 - avg_img
+                X_test = X_test / 255.0 - p.avg_img
                 pred1 = multi_model.predict(X_test)
                 pred2 = multi_model.predict(
                     np.array([np.flipud(image) for image in X_test])
@@ -272,6 +250,8 @@ def main(
 
         with open("pred_" + model_name + ".pkl", "wb") as f:
             pickle.dump([[ra.test_data], [predictions]], f, pickle.HIGHEST_PROTOCOL)
+
+############### end functions #######################
 
 
 if __name__ == "__main__":

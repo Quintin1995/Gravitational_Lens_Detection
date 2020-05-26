@@ -1,7 +1,6 @@
 # settings.yaml file
 # This file contains all settings for a model to run.
 
-
 model_name: first_model     # string
 num_chunks: 2000            # int
 chunk_size: 1280            # int
@@ -10,3 +9,19 @@ num_batch_augm: 20          # int
 img_rows: 101               # int
 img_cols: 101               # int
 root_dir_models: models     # string
+
+#other parameters
+nbands: 1                   # number of color channels you want to use.
+normalize: True             # boolean - Normalize the images to max of 255 (valid for single-band only)
+augm_pred: True             # boolean
+learning_rate: 0.0001       # float
+resize: False               # float
+
+#more parameters
+range_min: 0.02             # float
+range_max: 0.30             # float
+
+#more parameters
+buffer_size: 10             # int
+avg_img: 0                  # int
+
