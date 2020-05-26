@@ -39,86 +39,38 @@ import augmentation as ra
 import argparse
 import pickle
 from datetime import datetime
+import json
+from parameters import Parameters
+from utils import *
 
 
-# PARAMETERS###########################
-input_sizes = [(101, 101)]  # size of the input images
+# load the settings dictionary in order to start a run.
+settings = load_run_yaml("runs/run.yaml")
 
-default_augmentation_params = {
-    "zoom_range": (1 / 1.1, 1.0),
-    "rotation_range": (0, 180),
-    "shear_range": (0, 0),
-    "translation_range": (-4, 4),
-    "do_flip": True,
-}
+# load all the parameters from settings dictionary into a parameter class.
+params = Parameters(settings)
 
-num_chunks = 2000
-# num_chunks=10
-chunk_size = 1280
-batch_size = 64
-num_batch_augm = 20
-nbands = 1
-normalize = True  # normalize the images to max of 255 (valid for single-band only)
-augm_pred = True
-# load_model=
-model_name = "baseline_model"
-learning_rate = 0.0001
-resize = False
-
-range_min = 0.02
-range_max = 0.30
-
-########################################
-buffer_size = 10
-avg_img = 0
-input_shape = (input_sizes[0][0], input_sizes[0][1], 3)
 test_path = ra.test_path
 test_data = ra.test_data
 
 
-def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
-    assert len(inputs) == len(targets)
-    if shuffle:
-        indices = np.arange(len(inputs))
-        np.random.shuffle(indices)
-    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
-        if shuffle:
-            excerpt = indices[start_idx : start_idx + batchsize]
-        else:
-            excerpt = slice(start_idx, start_idx + batchsize)
-        yield inputs[excerpt], targets[excerpt]
-
-
-def build_resnet():
-
-    model = resnet.ResnetBuilder.build_resnet_18(input_shape, 1)  # 18
-    return model
-
-
-def call_model(model="resnet"):
-
-    if model == "resnet":
-        multi_model = build_resnet()
-
-    return multi_model
-
-
+############# functions #####################
 def main(
     model="resnet",
-    mode="predict",
-    num_chunks=num_chunks,
-    chunk_size=chunk_size,
-    input_sizes=input_sizes,
-    batch_size=batch_size,
-    nbands=nbands,
-    model_name=model_name,
+    mode="train",
+    num_chunks=params.num_chunks,
+    chunk_size=params.chunk_size,
+    input_sizes=params.input_sizes,
+    batch_size=params.batch_size,
+    nbands=params.nbands,
+    model_name=params.model_name,
 ):
-    mode = "train"
-    multi_model = call_model(model=model)
+    
+    multi_model = call_model(params, model=model)
 
     if mode == "train":
 
-        loss = optimizers.Adam(lr=learning_rate)
+        loss = optimizers.Adam(lr=params.learning_rate)
 
         multi_model.compile(
             optimizer=loss,
@@ -128,47 +80,47 @@ def main(
 
         if nbands == 3:
             augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos_col(
-                num_chunks=num_chunks,
+                num_chunks=params.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                augmentation_params=default_augmentation_params,
+                augmentation_params=params.default_augmentation_params,
             )
             augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg_col(
-                num_chunks=num_chunks,
+                num_chunks=params.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                augmentation_params=default_augmentation_params,
+                augmentation_params=params.default_augmentation_params,
             )
 
         else:
             augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos(
-                range_min=range_min,
-                range_max=range_max,
-                num_chunks=num_chunks,
+                range_min=params.range_min,
+                range_max=params.range_max,
+                num_chunks=params.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                normalize=normalize,
-                resize=resize,
-                augmentation_params=default_augmentation_params,
+                normalize=params.normalize,
+                resize=params.resize,
+                augmentation_params=params.default_augmentation_params,
             )
             augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg(
-                num_chunks=num_chunks,
+                num_chunks=params.num_chunks,
                 chunk_size=chunk_size,
                 target_sizes=input_sizes,
-                normalize=normalize,
-                resize=resize,
-                augmentation_params=default_augmentation_params,
+                normalize=params.normalize,
+                resize=params.resize,
+                augmentation_params=params.default_augmentation_params,
             )
 
         train_gen_neg = load_data.buffered_gen_mp(
-            augmented_data_gen_neg, buffer_size=buffer_size
+            augmented_data_gen_neg, buffer_size=params.buffer_size
         )
         train_gen_pos = load_data.buffered_gen_mp(
-            augmented_data_gen_pos, buffer_size=buffer_size
+            augmented_data_gen_pos, buffer_size=params.buffer_size
         )
         actual_begin_time = time.time()
         try:
-            for chunk in range(num_chunks):
+            for chunk in range(params.num_chunks):
                 start_time = time.time()
                 chunk_data_pos, chunk_length = next(train_gen_pos)
                 y_train_pos = chunk_data_pos.pop()
@@ -188,11 +140,11 @@ def main(
                     X_train, y_train, batch_size, shuffle=True
                 ):
                     X_batch, y_batch = batch
-                    train = multi_model.fit(X_batch / 255.0 - avg_img, y_batch)
+                    train = multi_model.fit(X_batch / 255.0 - params.avg_img, y_batch)
                     batches += 1
                 X_train = None
                 y_train = None
-                print("Chunck {}/{} has been trained".format(chunk, num_chunks))
+                print("Chunck {}/{} has been trained".format(chunk, params.num_chunks))
                 print("Chunck took {0:.3f} seconds".format(time.time() - start_time))
 
         except KeyboardInterrupt:
@@ -225,14 +177,14 @@ def main(
 
         predictions = []
         test_batches = 0
-        if augm_pred == True:
+        if params.augm_pred == True:
             start_time = time.time()
             for e, (chunk_data_test, chunk_length_test) in enumerate(
                 augmented_data_gen_test_fixed
             ):
                 X_test = chunk_data_test
                 X_test = X_test[0]
-                X_test = X_test / 255.0 - avg_img
+                X_test = X_test / 255.0 - params.avg_img
                 pred1 = multi_model.predict(X_test)
                 pred2 = multi_model.predict(
                     np.array([np.flipud(image) for image in X_test])
@@ -253,13 +205,15 @@ def main(
             ):
                 X_test = chunk_data_test
                 X_test = X_test[0]
-                X_test = X_test / 255.0 - avg_img
+                X_test = X_test / 255.0 - params.avg_img
                 pred1 = multi_model.predict(X_test)
                 preds = pred1.tolist()
                 predictions = predictions + preds
 
         with open("pred_" + model_name + ".pkl", "wb") as f:
             pickle.dump([[ra.test_data], [predictions]], f, pickle.HIGHEST_PROTOCOL)
+
+############### end functions #######################
 
 
 if __name__ == "__main__":
@@ -272,17 +226,22 @@ if __name__ == "__main__":
         kwargs["model_name"] = sys.argv[3]
     main(**kwargs)
 
-objects = []
-with (open("pred_my_model.pkl", "rb")) as openfile:
-    while True:
-        try:
-            objects.append(pickle.load(openfile))
-        except EOFError:
-            break
 
-f = open("pred_my_model.csv", "w")
-x = str(objects[0])
-f.write(x)
-f.close()
+######################################################
 
-print("Dati salvati nel file pred_my_model.csv")
+
+# objects = []
+# with (open("pred_my_model.pkl", "rb")) as openfile:
+#     while True:
+#         try:
+#             objects.append(pickle.load(openfile))
+#         except EOFError:
+#             break
+
+# f = open("pred_my_model.csv", "w")
+# x = str(objects[0])
+# f.write(x)
+# f.close()
+
+# print("Dati salvati nel file pred_my_model.csv")
+# print("Translation:\nData saved in the file pred_my_model.csv")
