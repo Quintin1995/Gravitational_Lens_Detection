@@ -11,6 +11,7 @@ import os
 
 # =====================================================================
 
+
 def rgb_composer(rfile, gfile, bfile, source_r, source_g, source_b):
     """
     NAME
@@ -110,32 +111,47 @@ def rgb_composer(rfile, gfile, bfile, source_r, source_g, source_b):
 
     # -------------------------------------------------------------------
 
-
     vb = False
 
     outfile = "color.png"
 
     # Defaults optimized for CFHTLS...
-    pars = '1.7,0.09'
-    scales = '0.4,0.6,1.7'
+    pars = "1.7,0.09"
+    scales = "0.4,0.6,1.7"
 
     # More general sensible choices:
     backsub = False
-    saturation = 'white'
+    saturation = "white"
     offset = 0.0
-    masklevel = None # Better default would be -1.0
+    masklevel = None  # Better default would be -1.0
 
     # Parse nonlinearity parameters:
-    Qs, alphas = pars.split(',')
+    Qs, alphas = pars.split(",")
     Q = float(Qs)
     alpha = float(alphas)
 
     # Parse channel colour scales:
-    x, y, z = scales.split(',')
+    x, y, z = scales.split(",")
     rscale, gscale, bscale = float(x), float(y), float(z)
 
     # Compose the image!
 
-    image=humvi.compose_mod(rfile, gfile, bfile, source_r, source_g, source_b, scales=(rscale, gscale, bscale), Q=Q, alpha=alpha, masklevel=masklevel, saturation=saturation, offset=offset, backsub=backsub, vb=vb, outfile=outfile)
+    image = humvi.compose_mod(
+        rfile,
+        gfile,
+        bfile,
+        source_r,
+        source_g,
+        source_b,
+        scales=(rscale, gscale, bscale),
+        Q=Q,
+        alpha=alpha,
+        masklevel=masklevel,
+        saturation=saturation,
+        offset=offset,
+        backsub=backsub,
+        vb=vb,
+        outfile=outfile,
+    )
 
     return image

@@ -16,22 +16,27 @@ from PIL import Image
 
 # ======================================================================
 
-def lupton_intensity(r,g,b,type='sum'):
 
-    if type == 'sum':
-        return (r+g+b) + 1e-10
+def lupton_intensity(r, g, b, type="sum"):
 
-    elif type == 'rms':
-        return numpy.sqrt(r*r+g*g+b*b) + 1e-10
+    if type == "sum":
+        return (r + g + b) + 1e-10
+
+    elif type == "rms":
+        return numpy.sqrt(r * r + g * g + b * b) + 1e-10
+
 
 # ----------------------------------------------------------------------
+
 
 def lupton_stretch(I, Q, alpha):
 
-    return numpy.arcsinh(alpha*Q*I) / (Q*I)
+    return numpy.arcsinh(alpha * Q * I) / (Q * I)
+
 
 # ----------------------------------------------------------------------
 # Clip high values to box:
+
 
 def lupton_saturate(r, g, b, threshold):
 
@@ -39,18 +44,19 @@ def lupton_saturate(r, g, b, threshold):
 
     # Highest pixel-value at given position
     maxpix = numpy.max(x, axis=-1)
-    maxpix[maxpix<1.0] = 1.0
+    maxpix[maxpix < 1.0] = 1.0
 
-    rr = r/maxpix
-    gg = g/maxpix
-    bb = b/maxpix
+    rr = r / maxpix
+    gg = g / maxpix
+    bb = b / maxpix
 
     return rr, gg, bb
+
 
 # ======================================================================
 # Testing:
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     print("No tests defined")
 

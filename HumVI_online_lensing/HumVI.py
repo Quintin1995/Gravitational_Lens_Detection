@@ -11,6 +11,7 @@ import os
 
 # =====================================================================
 
+
 def HumVI(argv):
     """
     NAME
@@ -111,11 +112,26 @@ def HumVI(argv):
     # -------------------------------------------------------------------
 
     try:
-        opts, args = getopt.getopt(argv, "hvp:s:n:o:x:z:blwm:",\
-        ["help", "verbose", "scales", "pars", "output", "saturate-to", "offset", "subtract-background", "lupton", "wherry", "mask"])
+        opts, args = getopt.getopt(
+            argv,
+            "hvp:s:n:o:x:z:blwm:",
+            [
+                "help",
+                "verbose",
+                "scales",
+                "pars",
+                "output",
+                "saturate-to",
+                "offset",
+                "subtract-background",
+                "lupton",
+                "wherry",
+                "mask",
+            ],
+        )
     except getopt.GetoptError as err:
         # print help information and exit:
-        print(str(err)) # will print something like "option -a not recognized"
+        print(str(err))  # will print something like "option -a not recognized"
         print(HumVI.__doc__)
         return
 
@@ -124,14 +140,14 @@ def HumVI(argv):
     outfile = "color.png"
 
     # Defaults optimized for CFHTLS...
-    pars = '1.7,0.09'
-    scales = '0.4,0.6,1.7'
+    pars = "1.7,0.09"
+    scales = "0.4,0.6,1.7"
 
     # More general sensible choices:
     backsub = False
-    saturation = 'white'
+    saturation = "white"
     offset = 0.0
-    masklevel = None # Better default would be -1.0
+    masklevel = None  # Better default would be -1.0
 
     for o, a in opts:
         if o in ("-h", "--help"):
@@ -156,7 +172,6 @@ def HumVI(argv):
         else:
             assert False, "Unhandled option"
 
-
     # Check for datafiles in array args:
 
     print(len(args))
@@ -171,23 +186,37 @@ def HumVI(argv):
         return
 
     # Parse nonlinearity parameters:
-    Qs, alphas = pars.split(',')
+    Qs, alphas = pars.split(",")
     Q = float(Qs)
     alpha = float(alphas)
 
     # Parse channel colour scales:
-    x, y, z = scales.split(',')
+    x, y, z = scales.split(",")
     rscale, gscale, bscale = float(x), float(y), float(z)
 
     # Compose the image!
 
-    humvi.compose(rfile, gfile, bfile, scales=(rscale, gscale, bscale), Q=Q, alpha=alpha, masklevel=masklevel, saturation=saturation, offset=offset, backsub=backsub, vb=vb, outfile=outfile)
+    humvi.compose(
+        rfile,
+        gfile,
+        bfile,
+        scales=(rscale, gscale, bscale),
+        Q=Q,
+        alpha=alpha,
+        masklevel=masklevel,
+        saturation=saturation,
+        offset=offset,
+        backsub=backsub,
+        vb=vb,
+        outfile=outfile,
+    )
 
     return
 
+
 # ======================================================================
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     HumVI(sys.argv[1:])
 
 # ======================================================================

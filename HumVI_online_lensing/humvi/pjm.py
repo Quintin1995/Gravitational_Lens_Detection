@@ -14,6 +14,7 @@ from PIL import Image
 # ======================================================================
 # Add small offset to image, to make background look dark gray not black:
 
+
 def pjm_offset(r, g, b, offset):
 
     rr = r + offset
@@ -22,13 +23,15 @@ def pjm_offset(r, g, b, offset):
 
     return rr, gg, bb
 
+
 # ----------------------------------------------------------------------
 # Detect problem areas in any of the channel images, and mask out:
+
 
 def pjm_mask(r, g, b, threshold):
 
     tiny = 1e-10
-    mask = r*0.0 + 1.0
+    mask = r * 0.0 + 1.0
 
     for image in (r, g, b):
 
@@ -38,6 +41,7 @@ def pjm_mask(r, g, b, threshold):
         mask[image < threshold] = 0.0
         mask[(image > -tiny) & (image < tiny)] = 0.0
 
-    return r*mask, g*mask, b*mask
+    return r * mask, g * mask, b * mask
+
 
 # ======================================================================

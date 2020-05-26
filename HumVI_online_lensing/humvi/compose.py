@@ -11,9 +11,21 @@ import os
 
 # =====================================================================
 
-def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
-            masklevel=None, saturation='color', offset=0.0, backsub=False, \
-            vb=False, outfile='color.png'):
+
+def compose(
+    rfile,
+    gfile,
+    bfile,
+    scales=(1.0, 1.0, 1.0),
+    Q=1.0,
+    alpha=1.0,
+    masklevel=None,
+    saturation="color",
+    offset=0.0,
+    backsub=False,
+    vb=False,
+    outfile="color.png",
+):
     """
     Compose RGB color image.
     """
@@ -21,9 +33,15 @@ def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
     # -------------------------------------------------------------------
 
     if vb:
-        print("HumVI: Making color composite image of data in following files:", rfile, gfile, bfile)
+        print(
+            "HumVI: Making color composite image of data in following files:",
+            rfile,
+            gfile,
+            bfile,
+        )
         print("HumVI: Output will be written to", outfile)
-        if masklevel is not None: print("HumVI: Masking stretched pixel values less than", masklevel)
+        if masklevel is not None:
+            print("HumVI: Masking stretched pixel values less than", masklevel)
 
     # Read in images, calibrated into flux units:
 
@@ -36,9 +54,9 @@ def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
 
     # Subtract backgrounds (median, optional):
     if backsub:
-      band1.subtract_background()
-      band2.subtract_background()
-      band3.subtract_background()
+        band1.subtract_background()
+        band2.subtract_background()
+        band3.subtract_background()
 
     # -------------------------------------------------------------------
 
@@ -58,7 +76,8 @@ def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
     red.set_scale(manually=rscale)
     green.set_scale(manually=gscale)
     blue.set_scale(manually=bscale)
-    if vb: print('HumVI: Scales normalized to:', red.scale, green.scale, blue.scale)
+    if vb:
+        print("HumVI: Scales normalized to:", red.scale, green.scale, blue.scale)
 
     # Scale images - only do once:
     red.apply_scale()
@@ -70,11 +89,16 @@ def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
 
     if vb:
         print("HumVI: Stretch parameters Q,alpha:", Q, alpha)
-        print("HumVI: At low surface brightness levels, the channel images are further rescaled by alpha")
-        print("HumVI: Nonlinearity sets in at about 1/Q*alpha in the scaled intensity image:", 1.0/(Q*alpha))
+        print(
+            "HumVI: At low surface brightness levels, the channel images are further rescaled by alpha"
+        )
+        print(
+            "HumVI: Nonlinearity sets in at about 1/Q*alpha in the scaled intensity image:",
+            1.0 / (Q * alpha),
+        )
 
     # Compute total intensity image and the arcsinh of it:
-    I = humvi.lupton_intensity(red.image, green.image, blue.image, type='sum')
+    I = humvi.lupton_intensity(red.image, green.image, blue.image, type="sum")
     stretch = humvi.lupton_stretch(I, Q, alpha)
 
     # Apply stretch to channel images:
@@ -95,7 +119,7 @@ def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
     # Negative offset makes background more black...
     r, g, b = humvi.pjm_offset(r, g, b, offset)
 
-    if saturation == 'color':
+    if saturation == "color":
         # Saturate to colour at some level - might as well be 1, since
         # Q redefines scale?:
         threshold = 1.0
@@ -106,8 +130,10 @@ def compose(rfile, gfile, bfile, scales=(1.0, 1.0, 1.0), Q=1.0, alpha=1.0, \
     image = humvi.pack_up(r, g, b)
     image.save(outfile)
 
-    if vb: print("HumVI: Image saved to:", outfile)
+    if vb:
+        print("HumVI: Image saved to:", outfile)
 
     return
+
 
 # ======================================================================
