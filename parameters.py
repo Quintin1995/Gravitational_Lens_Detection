@@ -51,7 +51,7 @@ class Parameters(object):
         self.full_path_of_weights   = os.path.join(self.model_path, self.filename_weights)
 
         #csv logger file to store the callback of the .fit function. It stores the history of the training session.
-        self.history_extension      = ".log"                 #Extension for history callback
+        self.history_extension      = ".csv"                 #Extension for history callback
         self.filename_history       = self.model_name + "_history" + self.history_extension
         self.full_path_of_history   = os.path.join(self.model_path, self.filename_history)
 
