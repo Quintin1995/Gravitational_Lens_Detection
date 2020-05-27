@@ -65,6 +65,9 @@ class Parameters(object):
         self.filename_param_dump   = self.model_name + "_param_dump" + self.param_dump_extension
         self.full_path_param_dump  = os.path.join(self.model_path, self.filename_param_dump)
 
+        #store all parameters of this object into a json file
+        self.write_parameters_to_file()
+
 
     def make_model_dir(self):
         try:
@@ -85,4 +88,4 @@ class Parameters(object):
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,
-            sort_keys=True,indent=2)
+            sort_keys=True,indent=4)
