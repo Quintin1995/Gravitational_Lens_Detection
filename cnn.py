@@ -49,6 +49,11 @@ settings = load_run_yaml("runs/run.yaml")
 
 # load all the parameters from settings dictionary into a parameter class.
 params = Parameters(settings)
+params.write_parameters_to_file()
+# with open(params.full_path_param_dump, 'w') as outfile:
+#     yaml.dump(settings, outfile )
+# print("Wrote all parameters to {}".format(params.full_path_param_dump))
+input()
 
 #test path and data - loading from augmenation.py
 test_path = ra.test_path

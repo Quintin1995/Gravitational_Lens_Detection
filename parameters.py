@@ -1,5 +1,6 @@
 import os
 from utils import *
+import json
 
 class Parameters(object):
     def __init__(self, settings):
@@ -59,6 +60,11 @@ class Parameters(object):
         self.filename_figure       = self.model_name + "_results" + self.figure_extension
         self.full_path_of_figure   = os.path.join(self.model_path, self.filename_figure)
 
+        #output path of .json       dumps all parameters into a json file
+        self.param_dump_extension  = ".json"                #Extension for the paramters being written to a file
+        self.filename_param_dump   = self.model_name + "_param_dump" + self.param_dump_extension
+        self.full_path_param_dump  = os.path.join(self.model_path, self.filename_param_dump)
+
 
     def make_model_dir(self):
         try:
@@ -67,3 +73,16 @@ class Parameters(object):
             print ("Creation of the directory %s failed" % self.model_path)
         else:
             print ("Successfully created the directory %s " % self.model_path)
+
+
+    #write all the paramters defined in parameters class to a file
+    def write_parameters_to_file(self):
+        with open(self.full_path_param_dump, 'w') as outfile:
+            json_content = self.toJSON()
+            outfile.write(json_content)
+            print("Wrote all parameters to {}".format(self.full_path_param_dump))
+
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+            sort_keys=True,indent=2)
