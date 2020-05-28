@@ -3,8 +3,8 @@
 
 model_name: first_model     # string
 num_chunks: 2               # int
-chunk_size: 1280            # int
-batch_size: 32              # int
+chunk_size: 640             # int     was 1280 originally
+batch_size: 64              # int
 num_batch_augm: 20          # int
 img_rows: 101               # int
 img_cols: 101               # int
