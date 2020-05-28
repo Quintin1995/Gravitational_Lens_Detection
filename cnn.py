@@ -55,6 +55,11 @@ test_path = ra.test_path
 test_data = ra.test_data
 
 
+
+### Try to create a test set here ###
+
+
+
 ############# functions #####################
 def main(
     model="resnet",
@@ -68,10 +73,9 @@ def main(
 ):
     #create a model (neural network)
     multi_model = call_model(params, model=model)
-    print("model loaded: {}".format(model))
+    print("Model loaded: {}".format(model))
     
-    #create a csv logger that will store the history of the .fit function into a .log file
-    # csv_logger = CSVLogger(params.full_path_of_history)
+    #create a csv logger that will store the history of the .fit function into a .csv file
     with open(params.full_path_of_history, 'w', newline='') as history_file:
         writer = csv.writer(history_file)
         writer.writerow(["chunk", "loss", "binary_accuracy"])
