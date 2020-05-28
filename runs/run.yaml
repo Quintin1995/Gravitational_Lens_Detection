@@ -1,6 +1,10 @@
 # settings.yaml file
 # This file contains all settings for a model to run.
 
+mode: predict              # string - 'train' if you want to train, 'predict' if you want to predict (only two options possible) (do not use quotes)
+path_trained_folder: weights_only_full_trained        #string - just a folder name
+filename_trained_weights: resnet_single_newtr_last_last_weights_only.h5   #string - filename of trained weights
+
 model_name: first_model     # string
 num_chunks: 2               # int
 chunk_size: 640             # int     was 1280 originally

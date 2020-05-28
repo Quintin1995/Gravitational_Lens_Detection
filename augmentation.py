@@ -12,7 +12,7 @@ import load_data
 
 ###########Parameters
 
-test_path = "data/test_data/"
+test_path = "data/test_data/lenses/"
 test_data = glob.glob(test_path + "*_r_*.fits")
 num_test = len(test_data)
 
@@ -626,9 +626,7 @@ def realtime_fixed_augmented_data_test(
     by default, only the identity transform is in the augmentation list, so no augmentation occurs (only ds_transforms are applied).
     """
     selected_indices = np.arange(num_test)
-    num_ids_per_chunk = chunk_size // len(
-        augmentation_transforms
-    )  # number of datapoints per chunk - each datapoint is multiple entries!
+    num_ids_per_chunk = chunk_size // len(augmentation_transforms)  # number of datapoints per chunk - each datapoint is multiple entries!
     num_chunks = int(np.ceil(len(selected_indices) / float(num_ids_per_chunk)))
 
     if target_sizes is None:
@@ -637,12 +635,8 @@ def realtime_fixed_augmented_data_test(
     process_func = processor_class(ds_transforms, augmentation_transforms, target_sizes)
 
     for n in range(num_chunks):
-        indices_n = selected_indices[
-            n * num_ids_per_chunk : (n + 1) * num_ids_per_chunk
-        ]
-        current_chunk_size = len(indices_n) * len(
-            augmentation_transforms
-        )  # last chunk will be shorter!
+        indices_n = selected_indices[ n * num_ids_per_chunk : (n + 1) * num_ids_per_chunk ]
+        current_chunk_size = len(indices_n) * len( augmentation_transforms )  # last chunk will be shorter!
 
         target_arrays = [
             np.empty(

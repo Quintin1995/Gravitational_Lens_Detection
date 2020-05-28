@@ -12,6 +12,12 @@ class Parameters(object):
         self.num_batch_augm  = settings["num_batch_augm"]
         self.input_sizes     = [(settings["img_rows"], settings["img_cols"])]
 
+        # Determine whether the user wants to train or predict
+        self.mode            = settings["mode"]
+
+        # Path to weights file for prediction (the referenced file should be a .h5 file that is trained)
+        self.full_path_predict_weights = os.path.join(settings["path_trained_folder"], settings["filename_trained_weights"])
+
         # Other parameters
         self.nbands          = settings["nbands"]
         self.normalize       = settings["normalize"]   # normalize the images to max of 255 (valid for single-band only)
