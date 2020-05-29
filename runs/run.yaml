@@ -1,14 +1,13 @@
 # settings.yaml file
 # This file contains all settings for a model to run.
 
-
-mode: predict              # string - 'train' if you want to train, 'predict' if you want to predict (only two options possible) (do not use quotes)
+mode: train              # string - 'train' if you want to train, 'predict' if you want to predict (only two options possible) (do not use quotes)
 path_trained_folder: weights_only_full_trained        #string - just a folder name where fully trained nets are located
 filename_trained_weights: resnet_single_newtr_last_last_weights_only.h5   #string - filename of trained network weights
 
 model_name: first_model     # string
-num_chunks: 2               # int
-chunk_size: 640             # int     was 1280 originally
+num_chunks: 500             # int
+chunk_size: 1280             # int     was 1280 originally
 batch_size: 64              # int
 num_batch_augm: 20          # int
 img_rows: 101               # int
@@ -40,3 +39,7 @@ shear_range_max: 0              # int
 translation_range_min: -4       # int - can be negative - should be negative :) - like "-4"
 translation_range_max: 4        # int - preferably positive absolute(translation_range_min) - like 4
 do_flip: True                   # boolean (True or False)
+
+
+# plot parameters
+chunk_plot_interval: 1          # int - Every x chunks a plot of loss will be made, where x is this variable

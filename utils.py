@@ -68,3 +68,27 @@ def plot_history(history, settings):
     plt.legend()
     plt.savefig(settings.full_path_of_figure)
     print("\nsaved figure to: " + settings.full_path_of_figure)
+
+
+
+# save a plot of binary accuracy and loss into the current model folder.
+def save_loss_and_acc_figure(loss_per_chunk, bin_acc_per_chunk, params):
+    x = range(1, len(bin_acc_per_chunk) + 1)
+
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.xlabel("Chunk")
+    plt.ylabel("Accuracy")
+    plt.plot(x, bin_acc_per_chunk, 'b', label='Training acc')
+
+    plt.title('Training binary accuracy')
+    plt.legend()
+    plt.subplot(1, 2, 2)
+    plt.xlabel("Chunk")
+    plt.ylabel('Loss')
+    plt.plot(x, loss_per_chunk, 'r', label='Training loss')
+
+    plt.title('Training Loss')
+    plt.legend()
+    plt.savefig(params.full_path_of_figure)
+    print("\nsaved Loss and Accuracy figure to: {}".format(params.full_path_of_figure))

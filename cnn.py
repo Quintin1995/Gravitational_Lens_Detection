@@ -43,6 +43,7 @@ import json
 from parameters import Parameters
 from utils import *
 import csv
+import matplotlib.pyplot as plt
 
 # load the settings dictionary in order to start a run.
 settings = load_run_yaml("runs/run.yaml")
@@ -120,6 +121,8 @@ def main(
                 augmented_data_gen_pos, buffer_size=params.buffer_size
             )
 
+            loss_per_chunk = []
+            bin_acc_per_chunk = []
             actual_begin_time = time.time()
             try:
                 for chunk in range(params.num_chunks):
@@ -136,15 +139,24 @@ def main(
                     y_train = np.concatenate((y_train_pos, y_train_neg))
                     y_train = y_train.astype(np.int32)
                     y_train = np.expand_dims(y_train, axis=1)
-                    train_batches = 0
                     batches = 0
-                    for batch in iterate_minibatches(
-                        X_train, y_train, batch_size, shuffle=True
-                    ):
+                    for batch in iterate_minibatches(X_train, y_train, batch_size, shuffle=True):
                         X_batch, y_batch = batch
                         history = multi_model.fit(X_batch / 255.0 - params.avg_img, y_batch)
                         batches += 1
+                    
+                    #write results to csv for later use
                     writer.writerow([str(chunk), str(history.history["loss"][0]), str(history.history["binary_accuracy"][0])])
+                    
+                    #store loss and accuracy in list
+                    loss_per_chunk.append(history.history["loss"][0])
+                    bin_acc_per_chunk.append(history.history["binary_accuracy"][0])
+
+                    # plot loss and accuracy on interval
+                    if chunk % params.chunk_plot_interval == 0:
+                        save_loss_and_acc_figure(loss_per_chunk, bin_acc_per_chunk, params)
+
+                    #empty the train data
                     X_train = None
                     y_train = None
                     print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks))
@@ -159,7 +171,7 @@ def main(
             multi_model.save_weights(params.full_path_of_weights)
             print("\nSaved weights to: {}".format(params.full_path_of_weights))
             print("\nSaved results to: {}".format(params.full_path_of_history))
-            print("Total time employed ", end_time - actual_begin_time)
+            print("\nTotal time employed ", load_data.hms( end_time - actual_begin_time))
 
     if mode == "predict":
         if nbands == 3:

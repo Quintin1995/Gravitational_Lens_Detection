@@ -71,6 +71,9 @@ class Parameters(object):
         self.filename_param_dump   = self.model_name + "_param_dump" + self.param_dump_extension
         self.full_path_param_dump  = os.path.join(self.model_path, self.filename_param_dump)
 
+        # plot parameters
+        self.chunk_plot_interval   = settings["chunk_plot_interval"]
+
         #store all parameters of this object into a json file
         self.write_parameters_to_file()
 
