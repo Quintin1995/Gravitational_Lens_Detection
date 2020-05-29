@@ -131,6 +131,7 @@ dmypy.json
 #folders
 data/
 models/
+weights_only_full_trained/
 
 #stored weights files
 *.h5

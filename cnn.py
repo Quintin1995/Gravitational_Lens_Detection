@@ -56,14 +56,14 @@ test_data = ra.test_data
 
 
 
-### Try to create a test set here ###
+### Try to create a test set here ####
 
 
 
 ############# functions #####################
 def main(
     model="resnet",
-    mode="train",
+    mode=params.mode,
     num_chunks=params.num_chunks,
     chunk_size=params.chunk_size,
     input_sizes=params.input_sizes,
@@ -80,11 +80,8 @@ def main(
         writer = csv.writer(history_file)
         writer.writerow(["chunk", "loss", "binary_accuracy"])
 
-
         if mode == "train":
-
             loss = optimizers.Adam(lr=params.learning_rate)
-
             multi_model.compile(
                 optimizer=loss,
                 loss="binary_crossentropy",
@@ -176,39 +173,28 @@ def main(
 
         if mode == "predict":
             if nbands == 3:
-                augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(
-                    target_sizes=input_sizes
-                )  # ,normalize=normalize)
+                augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(target_sizes=input_sizes)  # ,normalize=normalize)
             else:
-                augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(
-                    target_sizes=input_sizes
-                )
+                augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(target_sizes=input_sizes)
 
-            multi_model.load_weights(params.full_path_of_weights)
+            multi_model.load_weights(params.full_path_predict_weights)
 
             predictions = []
             test_batches = 0
             if params.augm_pred == True:            #seems to be a boolean to control whether you want the test data to be augmented or not when performing a prediction on test data.
                 start_time = time.time()
-                for e, (chunk_data_test, chunk_length_test) in enumerate(
-                    augmented_data_gen_test_fixed
-                ):
+                for e, (chunk_data_test, chunk_length_test) in enumerate(augmented_data_gen_test_fixed):
                     X_test = chunk_data_test
                     X_test = X_test[0]
                     X_test = X_test / 255.0 - params.avg_img
                     pred1 = multi_model.predict(X_test)
-                    pred2 = multi_model.predict(
-                        np.array([np.flipud(image) for image in X_test])
-                    )
-                    pred3 = multi_model.predict(
-                        np.array([np.fliplr(np.flipud(image)) for image in X_test])
-                    )
-                    pred4 = multi_model.predict(
-                        np.array([np.fliplr(image) for image in X_test])
-                    )
+                    pred2 = multi_model.predict(np.array([np.flipud(image) for image in X_test]))
+                    pred3 = multi_model.predict(np.array([np.fliplr(np.flipud(image)) for image in X_test]))
+                    pred4 = multi_model.predict(np.array([np.fliplr(image) for image in X_test]))
                     preds = np.mean([pred1, pred2, pred3, pred4], axis=0)
                     preds = preds.tolist()
                     predictions = predictions + preds
+                    print("done with predict chunk: {}".format(e))
 
             else:
                 for e, (chunk_data_test, chunk_length_test) in enumerate(
@@ -241,18 +227,18 @@ if __name__ == "__main__":
 ######################################################
 
 
-# objects = []
-# with (open("pred_my_model.pkl", "rb")) as openfile:
-#     while True:
-#         try:
-#             objects.append(pickle.load(openfile))
-#         except EOFError:
-#             break
+objects = []
+with (open("pred_" + params.model_name + ".pkl", "rb")) as openfile:
+    while True:
+        try:
+            objects.append(pickle.load(openfile))
+        except EOFError:
+            break
 
-# f = open("pred_my_model.csv", "w")
-# x = str(objects[0])
-# f.write(x)
-# f.close()
+f = open("pred_my_model.csv", "w")
+x = str(objects[0])
+f.write(x)
+f.close()
 
-# print("Dati salvati nel file pred_my_model.csv")
-# print("Translation:\nData saved in the file pred_my_model.csv")
+print("Dati salvati nel file pred_my_model.csv")
+print("Translation:\nData saved in the file pred_my_model.csv")

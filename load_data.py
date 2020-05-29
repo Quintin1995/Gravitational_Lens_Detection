@@ -19,7 +19,7 @@ import time
 from PIL import Image
 import HumVI_online_lensing as rgb
 
-import humvi
+# import humvi
 
 preprocess = False
 
