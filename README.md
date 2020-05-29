@@ -8,4 +8,4 @@ This project is based on the following project: https://github.com/CEnricoP/cnn_
 ## How to run
 python3 cnn.py
 
-Parameters can be set in run.yaml. The model wil either train or predict based on the parameters given in this file.
+Parameters can be set in runs/run.yaml. The model wil either train or predict based on the parameters given in this file.
