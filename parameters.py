@@ -81,7 +81,7 @@ class Parameters(object):
         except OSError:
             print ("Creation of the directory %s failed" % self.model_path)
         else:
-            print ("Successfully created the directory %s " % self.model_path)
+            print ("Successfully created the directory: %s " % self.model_path)
 
 
     #write all the paramters defined in parameters class to a file
@@ -89,7 +89,7 @@ class Parameters(object):
         with open(self.full_path_param_dump, 'w') as outfile:
             json_content = self.toJSON()
             outfile.write(json_content)
-            print("Wrote all parameters to {}".format(self.full_path_param_dump))
+            print("Wrote all run parameters to directory: {}".format(self.full_path_param_dump))
 
 
     def toJSON(self):

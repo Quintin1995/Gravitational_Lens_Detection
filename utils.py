@@ -20,7 +20,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 
 def build_resnet(parameters):
-    model = resnet.ResnetBuilder.build_resnet_18(parameters.input_shape, 1)  # 18
+    model = resnet.ResnetBuilder.build_resnet_18(parameters.input_shape, 1)
     return model
 
 

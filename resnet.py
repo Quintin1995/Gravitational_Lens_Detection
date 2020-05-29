@@ -246,20 +246,25 @@ class ResnetBuilder(object):
 
     @staticmethod
     def build_resnet_18(input_shape, num_outputs):
+        print("Building Resnet 18")
         return ResnetBuilder.build(input_shape, num_outputs, basic_block, [2, 2, 2, 2])
 
     @staticmethod
     def build_resnet_34(input_shape, num_outputs):
+        print("Building Resnet 34")
         return ResnetBuilder.build(input_shape, num_outputs, basic_block, [3, 4, 6, 3])
 
     @staticmethod
     def build_resnet_50(input_shape, num_outputs):
+        print("Building Resnet 50")
         return ResnetBuilder.build(input_shape, num_outputs, bottleneck, [3, 4, 6, 3])
 
     @staticmethod
     def build_resnet_101(input_shape, num_outputs):
+        print("Building Resnet 101")
         return ResnetBuilder.build(input_shape, num_outputs, bottleneck, [3, 4, 23, 3])
 
     @staticmethod
     def build_resnet_152(input_shape, num_outputs):
+        print("Building Resnet 152")
         return ResnetBuilder.build(input_shape, num_outputs, bottleneck, [3, 8, 36, 3])
