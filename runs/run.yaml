@@ -7,7 +7,7 @@ filename_trained_weights: resnet_single_newtr_last_last_weights_only.h5   #strin
 
 model_name: first_model     # string
 num_chunks: 500             # int
-chunk_size: 1280             # int     was 1280 originally
+chunk_size: 1280            # int     was 1280 originally
 batch_size: 64              # int
 num_batch_augm: 20          # int
 img_rows: 101               # int

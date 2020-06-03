@@ -574,9 +574,7 @@ def realtime_fixed_augmented_data_test_col(
     by default, only the identity transform is in the augmentation list, so no augmentation occurs (only ds_transforms are applied).
     """
     selected_indices = np.arange(num_test)
-    num_ids_per_chunk = chunk_size // len(
-        augmentation_transforms
-    )  # number of datapoints per chunk - each datapoint is multiple entries!
+    num_ids_per_chunk = chunk_size // len( augmentation_transforms )  # number of datapoints per chunk - each datapoint is multiple entries!
     num_chunks = int(np.ceil(len(selected_indices) / float(num_ids_per_chunk)))
 
     if target_sizes is None:
