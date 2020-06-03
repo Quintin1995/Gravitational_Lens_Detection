@@ -4,6 +4,7 @@ import skimage
 import load_data
 import multiprocessing as mp
 from PIL import Image
+import resnet
 import matplotlib.pyplot as plt
 
 
@@ -388,6 +389,18 @@ def realtime_fixed_augmented_data_test(
         target_arrays.append(labels.astype(np.int32))
 
         yield target_arrays, current_chunk_size
+
+
+
+def call_model(model="resnet"):
+    if model == "resnet":
+        multi_model = build_resnet()
+    return multi_model
+
+
+def build_resnet():
+    model = resnet.ResnetBuilder.build_resnet_18((101,101,1), 1)
+    return model
 ######### END FUNCTIONS #########
 
 
@@ -397,18 +410,6 @@ def realtime_fixed_augmented_data_test(
 
 ######### SCRIPT #########
 print("START")
-
-# path_lenses      = "data/test_data/lenses/"
-# test_data_lenses = glob.glob(path_lenses + "*_r_*.fits")
-# num_lenses       = len(test_data_lenses)
-
-# path_sources     = "data/test_data/sources"
-# test_data_lenses = glob.glob(path_sources + "*_r_*.fits")
-# num_sources      = len(test_data_lenses)
-
-# path_negatives   = "data/test_data/negatives"
-# test_data_lenses = glob.glob(path_negatives + "*_r_*.fits")
-# num_negatives    = len(test_data_lenses)
 
 resize = False
 normalize = True
@@ -439,29 +440,32 @@ augmented_data_gen_neg = realtime_augmented_data_gen_neg(
 
 augmented_data_gen_test_fixed = realtime_fixed_augmented_data_test(target_sizes=input_sizes)
 
+if False:
+    print("num_neg: {}".format(num_neg))
+    print("num_sources: {}".format(num_sources))
+    print("num_lenses: {}".format(num_lenses)) # is the test data in this case aswell, to be counted as negatives, because there are no lensing features in them.
 
-print("num_neg: {}".format(num_neg))
-print("num_sources: {}".format(num_sources))
-print("num_lenses: {}".format(num_lenses)) # is the test data in this case aswell, to be counted as negatives, because there are no lensing features in them.
+if False:
+    pos_data, labels_pos = next(augmented_data_gen_pos)[0]
+    neg_data, labels_neg = next(augmented_data_gen_neg)[0]
+    neg_data_lenses, labels_neg_lenses = next(augmented_data_gen_test_fixed)[0]             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
 
-pos_data, labels_pos = next(augmented_data_gen_pos)[0]
-neg_data, labels_neg = next(augmented_data_gen_neg)[0]
-neg_data_lenses, labels_neg_lenses = next(augmented_data_gen_test_fixed)[0]             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
+if False:
+    print("pos data labels: {}".format(str(labels_pos)))
+    print("neg data labels: {}".format(str(labels_neg)))
+    print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
 
-print("pos data labels: {}".format(str(labels_pos)))
-print("neg data labels: {}".format(str(labels_neg)))
-print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
+if False:
+    x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)
+    print(x_test.shape)
+    y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
+    print(y_test.shape)
 
+# load a keras model
+multi_model = call_model(model="resnet")
+multi_model.load_weights("weights_only_full_trained/resnet_color_last_weights_only.h5")
 
-x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)
-print(x_test.shape)
-y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
-print(y_test.shape)
-
-x=32
-
-
-
+x = 23
 # for idx in range(len(labels_neg)):
 #     img = (neg_data_lenses[idx])
 #     img = np.squeeze(img, axis=2)
