@@ -34,7 +34,7 @@ class Parameters(object):
         self.avg_img         = settings["avg_img"]
 
         # Even more params
-        self.input_shape     = (self.input_sizes[0][0], self.input_sizes[0][1], 3)
+        self.input_shape     = (self.input_sizes[0][0], self.input_sizes[0][1], self.nbands)
 
         # Default Augmentation Params           This dictionary holds all default data augmentation parameters
         self.default_augmentation_params = {

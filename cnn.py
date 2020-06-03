@@ -121,6 +121,17 @@ def main(
                 augmented_data_gen_pos, buffer_size=params.buffer_size
             )
 
+            # chunk, chunk_size = next(train_gen_pos)
+            # print(chunk[0])
+            # print(chunk)
+            # print(len(chunk))
+            # print(chunk[0].shape)
+            # print(type(chunk))
+            # for i in range(chunk_size):
+            #     plt.imshow(chunk[0][i]/255.0)
+            #     plt.show()
+
+
             loss_per_chunk = []
             bin_acc_per_chunk = []
             actual_begin_time = time.time()
@@ -178,6 +189,19 @@ def main(
             augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(target_sizes=input_sizes)  # ,normalize=normalize)
         else:
             augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(target_sizes=input_sizes)
+
+        #temp
+        chunk, size_chunk = next(augmented_data_gen_test_fixed)
+        print(len(chunk))
+        print(type(chunk[0]))
+        print(chunk[0])
+        print(chunk[0].shape)
+
+        for i in range(size_chunk):
+            print("img {}/{}".format(i, size_chunk))
+            plt.imshow(chunk[0][i]/255.0)
+            plt.show()
+        #end temp
 
         #load a trained model
         multi_model.load_weights(params.full_path_predict_weights)

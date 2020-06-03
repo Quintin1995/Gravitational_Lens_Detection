@@ -12,7 +12,7 @@ import load_data
 
 ###########Parameters
 
-test_path = "data/test_data/lenses/"
+test_path = "data/test_data/negatives/"
 test_data = glob.glob(test_path + "*_r_*.fits")
 num_test = len(test_data)
 
@@ -25,7 +25,7 @@ NUM_PROCESSES = 2
 CHUNK_SIZE = 25000
 IMAGE_WIDTH = 101
 IMAGE_HEIGHT = 101
-IMAGE_NUM_CHANNELS = 3
+IMAGE_NUM_CHANNELS = 1
 
 num_sources = load_data.num_sources
 num_lenses = load_data.num_lenses
@@ -440,9 +440,7 @@ def realtime_augmented_data_gen_pos(
         for source, lens in zip(gen, gen2):
             source = np.array(source)
             lens = np.array(lens)
-            imageData = lens + source / np.amax(source) * np.amax(
-                lens
-            ) * np.random.uniform(range_min, range_max)
+            imageData = lens + source / np.amax(source) * np.amax(lens) * np.random.uniform(range_min, range_max)
             scale_min = 0
             scale_max = imageData.max()
             imageData.clip(min=scale_min, max=scale_max)
@@ -583,12 +581,8 @@ def realtime_fixed_augmented_data_test_col(
     process_func = processor_class(ds_transforms, augmentation_transforms, target_sizes)
 
     for n in range(num_chunks):
-        indices_n = selected_indices[
-            n * num_ids_per_chunk : (n + 1) * num_ids_per_chunk
-        ]
-        current_chunk_size = len(indices_n) * len(
-            augmentation_transforms
-        )  # last chunk will be shorter!
+        indices_n = selected_indices[ n * num_ids_per_chunk : (n + 1) * num_ids_per_chunk ]
+        current_chunk_size = len(indices_n) * len( augmentation_transforms )  # last chunk will be shorter!
 
         target_arrays = [
             np.empty(
