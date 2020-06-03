@@ -347,7 +347,7 @@ def realtime_augmented_data_gen_neg(
 def realtime_fixed_augmented_data_test(
     ds_transforms=ds_transforms_default,
     augmentation_transforms=[tform_identity],  # keep
-    chunk_size=500,
+    chunk_size=5514,
     target_sizes=None,
     processor_class=LoadAndProcessFixedTest,
 ):
@@ -446,36 +446,21 @@ print("num_lenses: {}".format(num_lenses)) # is the test data in this case aswel
 
 pos_data, labels_pos = next(augmented_data_gen_pos)[0]
 neg_data, labels_neg = next(augmented_data_gen_neg)[0]
-neg_data_lenses, chunk_size = next(augmented_data_gen_test_fixed)             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
+neg_data_lenses, labels_neg_lenses = next(augmented_data_gen_test_fixed)[0]             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
 
-# print(type(pos_data[0]))
-# print(type(pos_data[1]))
-# print(len(pos_data[0]))
-# print(len(pos_data[1]))
-# print("0- pos data labels: {}".format(str(pos_data[0])))
-# print("1- pos data labels: {}".format(str(pos_data[1])))
-# input()
-
-# print(type(neg_data[0]))
-# print(type(neg_data[1]))
-# print(len(neg_data[0]))
-# print(len(neg_data[1]))
-# print("0- neg data labels: {}".format(str(neg_data[0])))
-# print("1- neg data labels: {}".format(str(neg_data[1])))
-# input()
+print("pos data labels: {}".format(str(labels_pos)))
+print("neg data labels: {}".format(str(labels_neg)))
+print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
 
 
-# print(type(neg_data_lenses[0]))
-# print(type(neg_data_lenses[1]))
-# print(len(neg_data_lenses[0]))
-# print(len(neg_data_lenses[1]))
-# print("0- neg lenses data labels: {}".format(str(neg_data_lenses[0])))
-# print("1- neg lenses data labels: {}".format(str(neg_data_lenses[1])))
-# input()
+x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)
+print(x_test.shape)
+y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
+print(y_test.shape)
+
+x=32
 
 
-# print(type(neg_data_lenses[0]))
-# print(chunk_size)
 
 # for idx in range(len(labels_neg)):
 #     img = (neg_data_lenses[idx])
