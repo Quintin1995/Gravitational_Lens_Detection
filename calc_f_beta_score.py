@@ -6,7 +6,18 @@ import multiprocessing as mp
 from PIL import Image
 import resnet
 import matplotlib.pyplot as plt
+import os
+import json
 
+### begin model to be loaded for prediction ###
+model_folder = "29_05_2020_14h_46m_02s_500chunks/"
+model_folder = os.path.join("models", model_folder)
+h5_file = glob.glob(model_folder + "*.h5")[0]
+
+param_dump_filename = glob.glob(model_folder + "*.json")[0]
+with open(param_dump_filename, 'r') as f:
+    param_dict = json.load(f)
+### end - model to be loaded for prediction ###
 
 lenses_path = "data/test_data/lenses/"
 test_data = glob.glob(lenses_path + "*_r_*.fits")
@@ -24,7 +35,6 @@ default_augmentation_params = {
     'shear_range': (0, 0),
     'translation_range': (-4, 4),
 }
-IMAGE_NUM_CHANNELS = 1
 CHUNK_SIZE = 25000
 IMAGE_WIDTH = 101
 IMAGE_HEIGHT = 101
@@ -100,9 +110,9 @@ def load_and_process_image_fixed_test(
 ):
     img_id = test_data[img_index]
     img = load_data.load_fits_test(img_id)
-    if IMAGE_NUM_CHANNELS == 3:
+    if param_dict["nbands"] == 3:
         img = np.dstack((img, img, img))
-    if IMAGE_NUM_CHANNELS == 1:
+    if param_dict["nbands"] == 1:
         img = np.expand_dims(img, axis=2)
 
     return [img]
@@ -125,9 +135,9 @@ def fast_warp(img, tf, output_shape=(53, 53), mode="reflect"):
     img = img.astype(np.float32)
     m = tf.params.astype(np.float32)
     img_wf = np.empty(
-        (output_shape[0], output_shape[1], IMAGE_NUM_CHANNELS), dtype="float32"
+        (output_shape[0], output_shape[1], param_dict["nbands"]), dtype="float32"
     )
-    for k in range(IMAGE_NUM_CHANNELS):
+    for k in range(param_dict["nbands"]):
         img_wf[..., k] = skimage.transform._warps_cy._warp_fast(
             img[..., k], m, output_shape=output_shape, mode=mode
         ).astype(np.float32)
@@ -253,7 +263,7 @@ def realtime_augmented_data_gen_pos(
         )  # LENS
 
         target_arrays_pos = [
-            np.empty((chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS), dtype="float32")
+            np.empty((chunk_size, size_x, size_y, param_dict["nbands"]), dtype="float32")
             for size_x, size_y in target_sizes
         ]
 
@@ -316,7 +326,7 @@ def realtime_augmented_data_gen_neg(
         process_func = processor_class(ds_transforms, augmentation_params, target_sizes)
 
         target_arrays = [
-            np.empty((chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS), dtype="float32")
+            np.empty((chunk_size, size_x, size_y, param_dict["nbands"]), dtype="float32")
             for size_x, size_y in target_sizes
         ]
         pool = mp.Pool(NUM_PROCESSES)
@@ -368,7 +378,7 @@ def realtime_fixed_augmented_data_test(
 
         target_arrays = [
             np.empty(
-                (current_chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS),
+                (current_chunk_size, size_x, size_y, param_dict["nbands"]),
                 dtype="float32",
             )
             for size_x, size_y in target_sizes
@@ -399,7 +409,7 @@ def call_model(model="resnet"):
 
 
 def build_resnet():
-    model = resnet.ResnetBuilder.build_resnet_18((101,101,1), 1)
+    model = resnet.ResnetBuilder.build_resnet_18((101,101,param_dict["nbands"]), 1)
     return model
 ######### END FUNCTIONS #########
 
@@ -445,7 +455,7 @@ if False:
     print("num_sources: {}".format(num_sources))
     print("num_lenses: {}".format(num_lenses)) # is the test data in this case aswell, to be counted as negatives, because there are no lensing features in them.
 
-if False:
+if True:
     pos_data, labels_pos = next(augmented_data_gen_pos)[0]
     neg_data, labels_neg = next(augmented_data_gen_neg)[0]
     neg_data_lenses, labels_neg_lenses = next(augmented_data_gen_test_fixed)[0]             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
@@ -455,7 +465,7 @@ if False:
     print("neg data labels: {}".format(str(labels_neg)))
     print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
 
-if False:
+if True:
     x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)
     print(x_test.shape)
     y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
@@ -463,9 +473,13 @@ if False:
 
 # load a keras model
 multi_model = call_model(model="resnet")
-multi_model.load_weights("weights_only_full_trained/resnet_color_last_weights_only.h5")
 
-x = 23
+#load the weights
+multi_model.load_weights(h5_file)
+
+prediction_vector = multi_model.predict(x_test)
+print("prediction vector: {}".format(prediction_vector))
+
 # for idx in range(len(labels_neg)):
 #     img = (neg_data_lenses[idx])
 #     img = np.squeeze(img, axis=2)
