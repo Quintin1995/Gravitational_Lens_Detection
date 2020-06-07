@@ -11,6 +11,8 @@ class Parameters(object):
         self.batch_size      = settings["batch_size"]
         self.num_batch_augm  = settings["num_batch_augm"]
         self.input_sizes     = [(settings["img_rows"], settings["img_cols"])]
+        self.img_rows        = settings["img_rows"]
+        self.img_cols        = settings["img_cols"]
 
         # Determine whether the user wants to train or predict
         self.mode            = settings["mode"]

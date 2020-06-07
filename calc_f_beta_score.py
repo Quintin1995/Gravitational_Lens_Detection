@@ -192,7 +192,7 @@ def select_indices(num, num_selected):
     return selected_indices
 
 
-def perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes=None):
+def perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes=None):
     if target_sizes is None:
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
 
@@ -201,9 +201,7 @@ def perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes=Non
     result = []
     for tform_ds, target_size in zip(ds_transforms, target_sizes):
         result.append(
-            fast_warp(
-                img, tform_ds + tform_augment, output_shape=target_size, mode="reflect"
-            ).astype("float32")
+            fast_warp(params, img, tform_ds + tform_augment, output_shape=target_size, mode="reflect").astype("float32")
         )  # crop here?
 
     return result
