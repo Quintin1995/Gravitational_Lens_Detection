@@ -242,6 +242,7 @@ class ResnetBuilder(object):
         )(flatten1)
 
         model = Model(inputs=input, outputs=dense)
+        print(model.summary())
         return model
 
     @staticmethod
