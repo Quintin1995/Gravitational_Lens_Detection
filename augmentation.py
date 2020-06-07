@@ -168,8 +168,7 @@ def random_perturbation_transform(
         rotation += 180
 
     log_zoom_range = [np.log(z) for z in zoom_range]
-    zoom = np.exp(np.random.uniform(*log_zoom_range)
-    )  # for a zoom factor this sampling approach makes more sense.
+    zoom = np.exp(np.random.uniform(*log_zoom_range))  # for a zoom factor this sampling approach makes more sense.
     # the range should be multiplicatively symmetric, so [1/1.1, 1.1] instead of [0.9, 1.1] makes more sense.
 
     return build_augmentation_transform(zoom, rotation, shear, translation)
@@ -180,8 +179,6 @@ def perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_s
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
 
     tform_augment = random_perturbation_transform(**augmentation_params)
-
-
 
     result = []
     for tform_ds, target_size in zip(ds_transforms, target_sizes):
@@ -199,7 +196,8 @@ def perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_s
 def load_and_process_image_source(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_source[img_index]
     img = load_data.load_fits_source(img_id)
-    img = np.dstack((img, img, img))
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
     img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
@@ -207,7 +205,8 @@ def load_and_process_image_source(params, img_index, ds_transforms, augmentation
 def load_and_process_image_lens(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_lens[img_index]
     img = load_data.load_fits_lens(img_id)
-    img = np.dstack((img, img, img))
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
     img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
@@ -215,15 +214,17 @@ def load_and_process_image_lens(params, img_index, ds_transforms, augmentation_p
 def load_and_process_image_neg(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_neg[img_index]
     img = load_data.load_fits_neg(img_id)
-    img = np.dstack((img, img, img))
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
     img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
 
-def load_and_process_image_fixed_test(img_index, ds_transforms, augmentation_transforms, target_sizes=None):
+def load_and_process_image_fixed_test(params, img_index, ds_transforms, augmentation_transforms, target_sizes=None):
     img_id = test_data[img_index]
     img = load_data.load_fits_test(img_id)
-    img = np.dstack((img, img, img))
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
     return [img]
 
 
@@ -300,9 +301,7 @@ class LoadAndProcessNegCol(object):
         self.target_sizes = target_sizes
 
     def __call__(self, img_index):
-        return load_and_process_image_neg_col(
-            img_index, self.ds_transforms, self.augmentation_params, self.target_sizes
-        )
+        return load_and_process_image_neg_col(img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
 
 
 class LoadAndProcessPosCol(object):
@@ -437,7 +436,7 @@ def realtime_augmented_data_gen_pos(
         gen2 = pool2.imap(process_func2, selected_indices_lenses, chunksize=loadsize)
 
         k = 0
-        for source, lens in zip(gen, gen2):
+        for source, lens in zip(gen, gen2): #gen=source, gen2=lens
             source = np.array(source)
             lens = np.array(lens)
             imageData = lens + source / np.amax(source) * np.amax(lens) * np.random.uniform(range_min, range_max)

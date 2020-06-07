@@ -95,7 +95,7 @@ def load_fits_source(img_id):
     while image is None:
         try:
             image = fits.getdata(path + cutout_dict_train_source[img_id]["name"])
-            image = image.astype(np.float32)
+            image = image.astype(np.float32)    #is important
             image = scipy.signal.fftconvolve(image, PSF_r, mode="same")
             hdulist = pyfits.open(path + cutout_dict_train_source[img_id]["name"])
             prihdr = hdulist[0].header
