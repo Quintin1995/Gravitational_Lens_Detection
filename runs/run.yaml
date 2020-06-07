@@ -7,7 +7,7 @@ filename_trained_weights: resnet_single_newtr_last_last_weights_only.h5   #strin
 
 model_name: first_model     # string
 num_chunks: 500             # int
-chunk_size: 1280             # int     was 1280 originally
+chunk_size: 1280            # int     was 1280 originally
 batch_size: 64              # int
 num_batch_augm: 20          # int
 img_rows: 101               # int
@@ -17,7 +17,7 @@ root_dir_models: models     # string
 #other parameters
 nbands: 1                   # number of color channels you want to use.
 normalize: True             # boolean - Normalize the images to max of 255 (valid for single-band only)
-augm_pred: True             # boolean
+augm_pred: False            # boolean
 learning_rate: 0.0001       # float
 resize: False               # float
 

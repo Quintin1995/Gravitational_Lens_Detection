@@ -11,6 +11,8 @@ class Parameters(object):
         self.batch_size      = settings["batch_size"]
         self.num_batch_augm  = settings["num_batch_augm"]
         self.input_sizes     = [(settings["img_rows"], settings["img_cols"])]
+        self.img_rows        = settings["img_rows"]
+        self.img_cols        = settings["img_cols"]
 
         # Determine whether the user wants to train or predict
         self.mode            = settings["mode"]
@@ -34,7 +36,7 @@ class Parameters(object):
         self.avg_img         = settings["avg_img"]
 
         # Even more params
-        self.input_shape     = (self.input_sizes[0][0], self.input_sizes[0][1], 3)
+        self.input_shape     = (self.input_sizes[0][0], self.input_sizes[0][1], self.nbands)
 
         # Default Augmentation Params           This dictionary holds all default data augmentation parameters
         self.default_augmentation_params = {

@@ -12,7 +12,7 @@ import load_data
 
 ###########Parameters
 
-test_path = "data/test_data/lenses/"
+test_path = "data/test_data/negatives/"
 test_data = glob.glob(test_path + "*_r_*.fits")
 num_test = len(test_data)
 
@@ -23,9 +23,9 @@ NUM_PROCESSES = 2
 
 
 CHUNK_SIZE = 25000
-IMAGE_WIDTH = 101
-IMAGE_HEIGHT = 101
-IMAGE_NUM_CHANNELS = 3
+# IMAGE_WIDTH = 101
+# IMAGE_HEIGHT = 101
+# IMAGE_NUM_CHANNELS = 1
 
 num_sources = load_data.num_sources
 num_lenses = load_data.num_lenses
@@ -39,6 +39,36 @@ default_augmentation_params = {
     "translation_range": (-4, 4),
 }
 
+
+center_shift = None
+tform_center = None
+tform_uncenter = None
+tform_identity = None
+ds_transforms_default = None
+ds_transforms = None
+
+
+#call this function to set globals in this file. This is an ugly way, but i want params here.
+def augmentation_setup(params):
+    global center_shift
+    global tform_center
+    global tform_uncenter
+    global tform_identity
+    global ds_transforms_default
+    global ds_transforms
+
+
+    center_shift = np.array((params.img_rows, params.img_cols)) / 2.0 - 0.5
+    tform_center = skimage.transform.SimilarityTransform(translation=-center_shift)
+    tform_uncenter = skimage.transform.SimilarityTransform(translation=center_shift)
+    tform_identity = (
+        skimage.transform.AffineTransform()
+    )  # this is an identity transform by default
+    ds_transforms_default = [tform_identity]
+    ds_transforms = ds_transforms_default  # CHANGE THIS LINE to select downsampling transforms to be used - WHAT????
+    print("augmentation globals are set")
+
+
 ## UTILITIES ##
 
 
@@ -49,16 +79,16 @@ def select_indices(num, num_selected):
     return selected_indices
 
 
-def fast_warp(img, tf, output_shape=(53, 53), mode="reflect"):
+def fast_warp(params, img, tf, output_shape=(53, 53), mode="reflect"):
     """
     This wrapper function is about five times faster than skimage.transform.warp, for our use case.
     """
     img = img.astype(np.float32)
     m = tf.params.astype(np.float32)
     img_wf = np.empty(
-        (output_shape[0], output_shape[1], IMAGE_NUM_CHANNELS), dtype="float32"
+        (output_shape[0], output_shape[1], params.nbands), dtype="float32"
     )
-    for k in range(IMAGE_NUM_CHANNELS):
+    for k in range(params.nbands):
         img_wf[..., k] = skimage.transform._warps_cy._warp_fast(
             img[..., k], m, output_shape=output_shape, mode=mode
         ).astype(np.float32)
@@ -115,15 +145,6 @@ def build_ds_transform(
         return tform_ds
 
 
-center_shift = np.array((IMAGE_HEIGHT, IMAGE_WIDTH)) / 2.0 - 0.5
-tform_center = skimage.transform.SimilarityTransform(translation=-center_shift)
-tform_uncenter = skimage.transform.SimilarityTransform(translation=center_shift)
-tform_identity = (
-    skimage.transform.AffineTransform()
-)  # this is an identity transform by default
-ds_transforms_default = [tform_identity]
-ds_transforms = ds_transforms_default  # CHANGE THIS LINE to select downsampling transforms to be used
-
 
 def random_perturbation_transform(
     zoom_range, rotation_range, shear_range, translation_range, do_flip=False
@@ -147,15 +168,13 @@ def random_perturbation_transform(
         rotation += 180
 
     log_zoom_range = [np.log(z) for z in zoom_range]
-    zoom = np.exp(
-        np.random.uniform(*log_zoom_range)
-    )  # for a zoom factor this sampling approach makes more sense.
+    zoom = np.exp(np.random.uniform(*log_zoom_range))  # for a zoom factor this sampling approach makes more sense.
     # the range should be multiplicatively symmetric, so [1/1.1, 1.1] instead of [0.9, 1.1] makes more sense.
 
     return build_augmentation_transform(zoom, rotation, shear, translation)
 
 
-def perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes=None):
+def perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes=None):
     if target_sizes is None:
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
 
@@ -164,8 +183,7 @@ def perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes=Non
     result = []
     for tform_ds, target_size in zip(ds_transforms, target_sizes):
         result.append(
-            fast_warp(
-                img, tform_ds + tform_augment, output_shape=target_size, mode="reflect"
+            fast_warp(params, img, tform_ds + tform_augment, output_shape=target_size, mode="reflect"
             ).astype("float32")
         )  # crop here?
 
@@ -175,61 +193,53 @@ def perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes=Non
 ## REALTIME AUGMENTATION GENERATOR ##
 
 
-def load_and_process_image_source(
-    img_index, ds_transforms, augmentation_params, target_sizes=None
-):  ##USATA
+def load_and_process_image_source(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_source[img_index]
     img = load_data.load_fits_source(img_id)
-    img = np.dstack((img, img, img))
-    img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
+    img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
 
-def load_and_process_image_lens(
-    img_index, ds_transforms, augmentation_params, target_sizes=None
-):  ##USATA
+def load_and_process_image_lens(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_lens[img_index]
     img = load_data.load_fits_lens(img_id)
-    img = np.dstack((img, img, img))
-    img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
+    img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
 
-def load_and_process_image_neg(
-    img_index, ds_transforms, augmentation_params, target_sizes=None
-):  ##USATA
+def load_and_process_image_neg(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_neg[img_index]
     img = load_data.load_fits_neg(img_id)
-    img = np.dstack((img, img, img))
-    img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
+    img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
 
-def load_and_process_image_fixed_test(
-    img_index, ds_transforms, augmentation_transforms, target_sizes=None
-):
+def load_and_process_image_fixed_test(params, img_index, ds_transforms, augmentation_transforms, target_sizes=None):
     img_id = test_data[img_index]
     img = load_data.load_fits_test(img_id)
-    img = np.dstack((img, img, img))
+    if params.nbands == 3:
+        img = np.dstack((img, img, img))
     return [img]
 
 
-def load_and_process_image_neg_col(
-    img_index, ds_transforms, augmentation_params, target_sizes=None
-):  ##USATA
+def load_and_process_image_neg_col(params, img_index, ds_transforms, augmentation_params, target_sizes=None):  ##USATA
     img_id = load_data.train_ids_neg[img_index]
     img = load_data.load_fits_neg_col(img_id)
-    img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
 
-def load_and_process_image_pos_col(
-    img_index, ds_transforms, augmentation_params, target_sizes=None
-):
+def load_and_process_image_pos_col(params, img_index, ds_transforms, augmentation_params, target_sizes=None):
     img_id_lens = load_data.train_ids_lens[img_index[0]]
     img_id_src = load_data.train_ids_source[img_index[1]]
     img = load_data.load_fits_pos_col(img_id_lens, img_id_src)
-    img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    img_a = perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes)
     return img_a
 
 
@@ -242,39 +252,36 @@ def load_and_process_image_fixed_test_col(
 
 
 class LoadAndProcessNeg(object):  ##USATA
-    def __init__(self, ds_transforms, augmentation_params, target_sizes=None):
+    def __init__(self, params, ds_transforms, augmentation_params, target_sizes=None):
         self.ds_transforms = ds_transforms
         self.augmentation_params = augmentation_params
         self.target_sizes = target_sizes
+        self.params = params
 
     def __call__(self, img_index):
-        return load_and_process_image_neg(
-            img_index, self.ds_transforms, self.augmentation_params, self.target_sizes
-        )
+        return load_and_process_image_neg(self.params, img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
 
 
 class LoadAndProcessLens(object):  ##USATA
-    def __init__(self, ds_transforms, augmentation_params, target_sizes=None):
+    def __init__(self, params, ds_transforms, augmentation_params, target_sizes=None):
         self.ds_transforms = ds_transforms
         self.augmentation_params = augmentation_params
         self.target_sizes = target_sizes
+        self.params = params
 
     def __call__(self, img_index):
-        return load_and_process_image_lens(
-            img_index, self.ds_transforms, self.augmentation_params, self.target_sizes
-        )
+        return load_and_process_image_lens(self.params, img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
 
 
 class LoadAndProcessSource(object):  ##USATA
-    def __init__(self, ds_transforms, augmentation_params, target_sizes=None):
+    def __init__(self, params, ds_transforms, augmentation_params, target_sizes=None):
         self.ds_transforms = ds_transforms
         self.augmentation_params = augmentation_params
         self.target_sizes = target_sizes
+        self.params = params
 
     def __call__(self, img_index):
-        return load_and_process_image_source(
-            img_index, self.ds_transforms, self.augmentation_params, self.target_sizes
-        )
+        return load_and_process_image_source(self.params, img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
 
 
 class LoadAndProcessFixedTest(object):
@@ -284,24 +291,18 @@ class LoadAndProcessFixedTest(object):
         self.target_sizes = target_sizes
 
     def __call__(self, img_index):
-        return load_and_process_image_fixed_test(
-            img_index,
-            self.ds_transforms,
-            self.augmentation_transforms,
-            self.target_sizes,
-        )
+        return load_and_process_image_fixed_test(img_index, self.ds_transforms, self.augmentation_transforms, self.target_sizes)
 
 
 class LoadAndProcessNegCol(object):
-    def __init__(self, ds_transforms, augmentation_params, target_sizes=None):
+    def __init__(self, params, ds_transforms, augmentation_params, target_sizes=None):
         self.ds_transforms = ds_transforms
         self.augmentation_params = augmentation_params
         self.target_sizes = target_sizes
+        self.params = params
 
     def __call__(self, img_index):
-        return load_and_process_image_neg_col(
-            img_index, self.ds_transforms, self.augmentation_params, self.target_sizes
-        )
+        return load_and_process_image_neg_col(self.params, img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
 
 
 class LoadAndProcessPosCol(object):
@@ -332,6 +333,7 @@ class LoadAndProcessFixedTestCol(object):
 
 
 def realtime_augmented_data_gen_neg(
+    params,
     num_chunks=None,
     chunk_size=CHUNK_SIZE,
     augmentation_params=default_augmentation_params,  # keep
@@ -346,7 +348,7 @@ def realtime_augmented_data_gen_neg(
     new version, using Pool.imap instead of Pool.map, to avoid the data structure conversion
     from lists to numpy arrays afterwards.
     """
-
+    ds_transforms = ds_transforms_default
     if target_sizes is None:
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
     n = 0
@@ -355,10 +357,10 @@ def realtime_augmented_data_gen_neg(
             break
         selected_indices = select_indices(num_neg, chunk_size)
         labels = np.zeros(chunk_size)
-        process_func = processor_class(ds_transforms, augmentation_params, target_sizes)
+        process_func = processor_class(params, ds_transforms, augmentation_params, target_sizes)
 
         target_arrays = [
-            np.empty((chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS), dtype="float32")
+            np.empty((chunk_size, size_x, size_y, params.nbands), dtype="float32")
             for size_x, size_y in target_sizes
         ]
         pool = mp.Pool(NUM_PROCESSES)
@@ -390,6 +392,7 @@ def realtime_augmented_data_gen_neg(
 
 
 def realtime_augmented_data_gen_pos(
+    params,
     num_chunks=None,
     chunk_size=CHUNK_SIZE,
     augmentation_params=default_augmentation_params,  # keep
@@ -407,6 +410,7 @@ def realtime_augmented_data_gen_pos(
     new version, using Pool.imap instead of Pool.map, to avoid the data structure conversion
     from lists to numpy arrays afterwards.
     """
+    ds_transforms = ds_transforms_default
     if target_sizes is None:
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
     n = 0
@@ -418,15 +422,11 @@ def realtime_augmented_data_gen_pos(
 
         labels = np.ones(chunk_size)
 
-        process_func = processor_class(
-            ds_transforms, augmentation_params, target_sizes
-        )  # SOURCE
-        process_func2 = processor_class2(
-            ds_transforms, augmentation_params, target_sizes
-        )  # LENS
+        process_func = processor_class(params, ds_transforms, augmentation_params, target_sizes)  # SOURCE
+        process_func2 = processor_class2(params, ds_transforms, augmentation_params, target_sizes)  # LENS
 
         target_arrays_pos = [
-            np.empty((chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS), dtype="float32")
+            np.empty((chunk_size, size_x, size_y, params.nbands), dtype="float32")
             for size_x, size_y in target_sizes
         ]
 
@@ -437,12 +437,10 @@ def realtime_augmented_data_gen_pos(
         gen2 = pool2.imap(process_func2, selected_indices_lenses, chunksize=loadsize)
 
         k = 0
-        for source, lens in zip(gen, gen2):
+        for source, lens in zip(gen, gen2): #gen=source, gen2=lens
             source = np.array(source)
             lens = np.array(lens)
-            imageData = lens + source / np.amax(source) * np.amax(
-                lens
-            ) * np.random.uniform(range_min, range_max)
+            imageData = lens + source / np.amax(source) * np.amax(lens) * np.random.uniform(range_min, range_max)
             scale_min = 0
             scale_max = imageData.max()
             imageData.clip(min=scale_min, max=scale_max)
@@ -463,12 +461,12 @@ def realtime_augmented_data_gen_pos(
         pool2.close()
         pool2.join()
         target_arrays_pos.append(labels.astype(np.int32))
-
         yield target_arrays_pos, chunk_size
         n += 1
 
 
 def realtime_augmented_data_gen_neg_col(
+    params,
     num_chunks=None,
     chunk_size=CHUNK_SIZE,
     augmentation_params=default_augmentation_params,  # keep
@@ -493,7 +491,7 @@ def realtime_augmented_data_gen_neg_col(
         process_func = processor_class(ds_transforms, augmentation_params, target_sizes)
 
         target_arrays = [
-            np.empty((chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS), dtype="float32")
+            np.empty((chunk_size, size_x, size_y, params.nbands), dtype="float32")
             for size_x, size_y in target_sizes
         ]
         pool = mp.Pool(NUM_PROCESSES)
@@ -514,6 +512,7 @@ def realtime_augmented_data_gen_neg_col(
 
 
 def realtime_augmented_data_gen_pos_col(
+    params,
     num_chunks=None,
     chunk_size=CHUNK_SIZE,
     augmentation_params=default_augmentation_params,  # keep
@@ -542,7 +541,7 @@ def realtime_augmented_data_gen_pos_col(
         process_func = processor_class(ds_transforms, augmentation_params, target_sizes)
 
         target_arrays = [
-            np.empty((chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS), dtype="float32")
+            np.empty((chunk_size, size_x, size_y, params.nbands), dtype="float32")
             for size_x, size_y in target_sizes
         ]
         pool = mp.Pool(NUM_PROCESSES)
@@ -564,6 +563,7 @@ def realtime_augmented_data_gen_pos_col(
 
 
 def realtime_fixed_augmented_data_test_col(
+    params,
     ds_transforms=ds_transforms_default,
     augmentation_transforms=[tform_identity],  # keep
     chunk_size=4000,
@@ -574,9 +574,7 @@ def realtime_fixed_augmented_data_test_col(
     by default, only the identity transform is in the augmentation list, so no augmentation occurs (only ds_transforms are applied).
     """
     selected_indices = np.arange(num_test)
-    num_ids_per_chunk = chunk_size // len(
-        augmentation_transforms
-    )  # number of datapoints per chunk - each datapoint is multiple entries!
+    num_ids_per_chunk = chunk_size // len( augmentation_transforms )  # number of datapoints per chunk - each datapoint is multiple entries!
     num_chunks = int(np.ceil(len(selected_indices) / float(num_ids_per_chunk)))
 
     if target_sizes is None:
@@ -585,16 +583,12 @@ def realtime_fixed_augmented_data_test_col(
     process_func = processor_class(ds_transforms, augmentation_transforms, target_sizes)
 
     for n in range(num_chunks):
-        indices_n = selected_indices[
-            n * num_ids_per_chunk : (n + 1) * num_ids_per_chunk
-        ]
-        current_chunk_size = len(indices_n) * len(
-            augmentation_transforms
-        )  # last chunk will be shorter!
+        indices_n = selected_indices[ n * num_ids_per_chunk : (n + 1) * num_ids_per_chunk ]
+        current_chunk_size = len(indices_n) * len( augmentation_transforms )  # last chunk will be shorter!
 
         target_arrays = [
             np.empty(
-                (current_chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS),
+                (current_chunk_size, size_x, size_y, params.nbands),
                 dtype="float32",
             )
             for size_x, size_y in target_sizes
@@ -616,6 +610,7 @@ def realtime_fixed_augmented_data_test_col(
 
 
 def realtime_fixed_augmented_data_test(
+    params,
     ds_transforms=ds_transforms_default,
     augmentation_transforms=[tform_identity],  # keep
     chunk_size=500,
@@ -640,7 +635,7 @@ def realtime_fixed_augmented_data_test(
 
         target_arrays = [
             np.empty(
-                (current_chunk_size, size_x, size_y, IMAGE_NUM_CHANNELS),
+                (current_chunk_size, size_x, size_y, params.nbands),
                 dtype="float32",
             )
             for size_x, size_y in target_sizes

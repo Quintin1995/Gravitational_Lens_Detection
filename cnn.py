@@ -51,6 +51,9 @@ settings = load_run_yaml("runs/run.yaml")
 # load all the parameters from settings dictionary into a parameter class.
 params = Parameters(settings)
 
+ra.augmentation_setup(params)
+
+
 
 ############# functions #####################
 def main(
@@ -82,12 +85,14 @@ def main(
 
             if nbands == 3:
                 augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos_col(
+                    params = params,
                     num_chunks=params.num_chunks,
                     chunk_size=chunk_size,
                     target_sizes=input_sizes,
                     augmentation_params=params.default_augmentation_params,
                 )
                 augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg_col(
+                    params = params,
                     num_chunks=params.num_chunks,
                     chunk_size=chunk_size,
                     target_sizes=input_sizes,
@@ -96,6 +101,7 @@ def main(
 
             else:
                 augmented_data_gen_pos = ra.realtime_augmented_data_gen_pos(
+                    params = params,
                     range_min=params.range_min,
                     range_max=params.range_max,
                     num_chunks=params.num_chunks,
@@ -106,6 +112,7 @@ def main(
                     augmentation_params=params.default_augmentation_params,
                 )
                 augmented_data_gen_neg = ra.realtime_augmented_data_gen_neg(
+                    params = params,
                     num_chunks=params.num_chunks,
                     chunk_size=chunk_size,
                     target_sizes=input_sizes,
@@ -175,9 +182,22 @@ def main(
 
     if mode == "predict":
         if nbands == 3:
-            augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(target_sizes=input_sizes)  # ,normalize=normalize)
+            augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(params = params, target_sizes=input_sizes)  # ,normalize=normalize)
         else:
-            augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(target_sizes=input_sizes)
+            augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(params = params, target_sizes=input_sizes)
+
+        #temp
+        chunk, size_chunk = next(augmented_data_gen_test_fixed)
+        print(len(chunk))
+        print(type(chunk[0]))
+        print(chunk[0])
+        print(chunk[0].shape)
+
+        for i in range(size_chunk):
+            print("img {}/{}".format(i, size_chunk))
+            plt.imshow(chunk[0][i]/255.0)
+            plt.show()
+        #end temp
 
         #load a trained model
         multi_model.load_weights(params.full_path_predict_weights)
