@@ -295,13 +295,14 @@ class LoadAndProcessFixedTest(object):
 
 
 class LoadAndProcessNegCol(object):
-    def __init__(self, ds_transforms, augmentation_params, target_sizes=None):
+    def __init__(self, params, ds_transforms, augmentation_params, target_sizes=None):
         self.ds_transforms = ds_transforms
         self.augmentation_params = augmentation_params
         self.target_sizes = target_sizes
+        self.params = params
 
     def __call__(self, img_index):
-        return load_and_process_image_neg_col(img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
+        return load_and_process_image_neg_col(self.params, img_index, self.ds_transforms, self.augmentation_params, self.target_sizes)
 
 
 class LoadAndProcessPosCol(object):
@@ -356,7 +357,7 @@ def realtime_augmented_data_gen_neg(
             break
         selected_indices = select_indices(num_neg, chunk_size)
         labels = np.zeros(chunk_size)
-        process_func = processor_class(ds_transforms, augmentation_params, target_sizes)
+        process_func = processor_class(params, ds_transforms, augmentation_params, target_sizes)
 
         target_arrays = [
             np.empty((chunk_size, size_x, size_y, params.nbands), dtype="float32")
@@ -460,7 +461,6 @@ def realtime_augmented_data_gen_pos(
         pool2.close()
         pool2.join()
         target_arrays_pos.append(labels.astype(np.int32))
-
         yield target_arrays_pos, chunk_size
         n += 1
 
