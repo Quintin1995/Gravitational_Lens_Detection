@@ -20,10 +20,10 @@ with open(param_dump_filename, 'r') as f:
     param_dict = json.load(f)
 ### end - model to be loaded for prediction ###
 
+#location of lenses, which are galaxies without lensing features
 lenses_path = "data/test_data/lenses/"
 test_data = glob.glob(lenses_path + "*_r_*.fits")
 num_test = len(test_data)
-
 
 loadsize = 100
 num_sources = load_data.num_sources
@@ -462,8 +462,6 @@ def count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, threshold, beta_squarred
 ######### SCRIPT #########
 print("START")
 
-
-f_beta_threshold = 0.5
 resize = False
 normalize = True
 pos_chunk_size = 11598
@@ -509,7 +507,8 @@ if True:
     print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
 
 if True:
-    x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)
+    #the data is not normalized, therefore divide by 255.0
+    x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)/255.0
     print(x_test.shape)
     y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
     print(y_test.shape)
@@ -521,12 +520,11 @@ multi_model = call_model(model="resnet")
 multi_model.load_weights(h5_file)
 
 prediction_vector = multi_model.predict(x_test)
-print("prediction vector: {}".format(prediction_vector))
-print("lenght pred vec: {}".format(len(prediction_vector)))
+print("Length prediction vector: {}".format(len(prediction_vector)))
 
 beta_squarred = 0.03
 stepsize = 0.01
-threshold_range = np.arange(0.0,1.0+stepsize,stepsize)
+threshold_range = np.arange(stepsize,1.0,stepsize)
 
 f_betas = []
 for p_threshold in threshold_range:
@@ -538,5 +536,8 @@ threshold_range = list(threshold_range)
 plt.plot(threshold_range, f_betas)
 plt.xlabel("p threshold")
 plt.ylabel("F")
-plt.title("Beta = {}".format(math.sqrt(beta_squarred)))
+plt.title("F_beta score - Beta = {0:.2f}".format(math.sqrt(beta_squarred)))
+full_path_fBeta_figure = os.path.join(model_folder, "f_beta_graph.png")
+plt.savefig(full_path_fBeta_figure)
+print("figure saved: {}".format(full_path_fBeta_figure))
 plt.show()
