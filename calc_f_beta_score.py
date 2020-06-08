@@ -113,8 +113,8 @@ def load_and_process_image_fixed_test(
     img = load_data.load_fits_test(img_id)
     if param_dict["nbands"] == 3:
         img = np.dstack((img, img, img))
-    if param_dict["nbands"] == 1:
-        img = np.expand_dims(img, axis=2)
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
 
     return [img]
 
@@ -124,8 +124,13 @@ def load_and_process_image_neg(
 ):  ##USATA
     img_id = load_data.train_ids_neg[img_index]
     img = load_data.load_fits_neg(img_id)
-    img = np.dstack((img, img, img))
+    if param_dict["nbands"] == 3:
+        img = np.dstack((img, img, img))
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
+
     img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+
     return img_a
 
 
@@ -213,8 +218,13 @@ def load_and_process_image_source(
 ):  ##USATA
     img_id = load_data.train_ids_source[img_index]
     img = load_data.load_fits_source(img_id)
-    img = np.dstack((img, img, img))
+    if param_dict["nbands"] == 3:
+        img = np.dstack((img, img, img))
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
+
     img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+
     return img_a
 
 
@@ -223,8 +233,13 @@ def load_and_process_image_lens(
 ):  ##USATA
     img_id = load_data.train_ids_lens[img_index]
     img = load_data.load_fits_lens(img_id)
-    img = np.dstack((img, img, img))
+    if param_dict["nbands"] == 3:
+        img = np.dstack((img, img, img))
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
+
     img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    
     return img_a
 
 
@@ -453,10 +468,6 @@ def count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, threshold, beta_squarred
 
     return TP, TN, FP, FN, precision, recall, fp_rate, accuracy, F_beta
 ######### END FUNCTIONS #########
-
-
-
-
 
 
 ######### SCRIPT #########
