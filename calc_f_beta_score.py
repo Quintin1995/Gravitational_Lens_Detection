@@ -9,11 +9,18 @@ import matplotlib.pyplot as plt
 import os
 import json
 import math
+import csv
 
 ### begin model to be loaded for prediction ###
 model_folder = "07_06_2020_19h_33m_32s_500chunks_baseline/"
 model_folder = os.path.join("models", model_folder)
 h5_file = glob.glob(model_folder + "*.h5")[0]
+
+# file name and path of figure with f_beta score
+full_path_fBeta_figure = os.path.join(model_folder, "f_beta_graph.png")
+
+# file name and path of csv where f_beta results will be stored in csv format. This includes scores, such as TP, TN, FP, FN, accuracy, recall, precision.
+f_beta_full_path = os.path.join(model_folder, "f_beta_results.csv")
 
 param_dump_filename = glob.glob(model_folder + "*.json")[0]
 with open(param_dump_filename, 'r') as f:
@@ -124,8 +131,13 @@ def load_and_process_image_neg(
 ):  ##USATA
     img_id = load_data.train_ids_neg[img_index]
     img = load_data.load_fits_neg(img_id)
-    img = np.dstack((img, img, img))
+    if param_dict["nbands"] == 3:
+        img = np.dstack((img, img, img))
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
+
     img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+
     return img_a
 
 
@@ -213,8 +225,13 @@ def load_and_process_image_source(
 ):  ##USATA
     img_id = load_data.train_ids_source[img_index]
     img = load_data.load_fits_source(img_id)
-    img = np.dstack((img, img, img))
+    if param_dict["nbands"] == 3:
+        img = np.dstack((img, img, img))
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
+
     img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+
     return img_a
 
 
@@ -223,8 +240,13 @@ def load_and_process_image_lens(
 ):  ##USATA
     img_id = load_data.train_ids_lens[img_index]
     img = load_data.load_fits_lens(img_id)
-    img = np.dstack((img, img, img))
+    if param_dict["nbands"] == 3:
+        img = np.dstack((img, img, img))
+    # if param_dict["nbands"] == 1:
+    #     img = np.expand_dims(img, axis=2)
+
     img_a = perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes)
+    
     return img_a
 
 
@@ -455,13 +477,7 @@ def count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, threshold, beta_squarred
 ######### END FUNCTIONS #########
 
 
-
-
-
-
 ######### SCRIPT #########
-print("START")
-
 resize = False
 normalize = True
 pos_chunk_size = 11598
@@ -470,25 +486,8 @@ range_max =  0.30
 num_chunks = 500
 input_sizes = [(101,101)]
 
-augmented_data_gen_pos = realtime_augmented_data_gen_pos(
-                    range_min=range_min,
-                    range_max=range_max,
-                    num_chunks=num_chunks,
-                    chunk_size=pos_chunk_size,
-                    target_sizes=input_sizes,
-                    normalize=normalize,
-                    resize=resize,
-                    augmentation_params=default_augmentation_params,
-                )
-augmented_data_gen_neg = realtime_augmented_data_gen_neg(
-                    num_chunks=num_chunks,
-                    chunk_size=num_neg,
-                    target_sizes=input_sizes,
-                    normalize=normalize,
-                    resize=resize,
-                    augmentation_params=default_augmentation_params,
-                )
-
+augmented_data_gen_pos = realtime_augmented_data_gen_pos(range_min=range_min, range_max=range_max, num_chunks=num_chunks, chunk_size=pos_chunk_size, target_sizes=input_sizes, normalize=normalize, resize=resize, augmentation_params=default_augmentation_params)
+augmented_data_gen_neg = realtime_augmented_data_gen_neg(num_chunks=num_chunks, chunk_size=num_neg, target_sizes=input_sizes, normalize=normalize, resize=resize, augmentation_params=default_augmentation_params)
 augmented_data_gen_test_fixed = realtime_fixed_augmented_data_test(target_sizes=input_sizes)
 
 if True:
@@ -527,17 +526,21 @@ stepsize = 0.01
 threshold_range = np.arange(stepsize,1.0,stepsize)
 
 f_betas = []
-for p_threshold in threshold_range:
-    (TP, TN, FP, FN, precision, recall, fp_rate, accuracy, F_beta) = count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, p_threshold, beta_squarred)
-    f_betas.append(F_beta)
+with open(f_beta_full_path, 'w', newline='') as f_beta_file:
+    writer = csv.writer(f_beta_file)
+    writer.writerow(["p_threshold", "TP", "TN", "FP", "FN", "precision", "recall", "fp_rate", "accuracy", "f_beta"])
+    for p_threshold in threshold_range:
+        (TP, TN, FP, FN, precision, recall, fp_rate, accuracy, F_beta) = count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, p_threshold, beta_squarred)
+        f_betas.append(F_beta)
+        writer.writerow([str(p_threshold), str(TP), str(TN), str(FP), str(FN), str(precision), str(recall), str(fp_rate), str(accuracy), str(F_beta)])
 
-threshold_range = list(threshold_range)
+print("saved csv with f_beta scores to: ".format(f_beta_full_path))
 
-plt.plot(threshold_range, f_betas)
+plt.plot(list(threshold_range), f_betas)
 plt.xlabel("p threshold")
 plt.ylabel("F")
 plt.title("F_beta score - Beta = {0:.2f}".format(math.sqrt(beta_squarred)))
-full_path_fBeta_figure = os.path.join(model_folder, "f_beta_graph.png")
+
 plt.savefig(full_path_fBeta_figure)
 print("figure saved: {}".format(full_path_fBeta_figure))
 plt.show()
