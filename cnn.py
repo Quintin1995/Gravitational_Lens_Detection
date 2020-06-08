@@ -178,7 +178,8 @@ def main(
             multi_model.save_weights(params.full_path_of_weights)
             print("\nSaved weights to: {}".format(params.full_path_of_weights))
             print("\nSaved results to: {}".format(params.full_path_of_history))
-            print("\nTotal time employed ", load_data.hms( end_time - actual_begin_time))
+            final_time = end_time - actual_begin_time
+            print("\nTotal time employed ", load_data.hms( final_time))
 
     if mode == "predict":
         if nbands == 3:
