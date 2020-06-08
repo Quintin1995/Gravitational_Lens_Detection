@@ -8,9 +8,10 @@ import resnet
 import matplotlib.pyplot as plt
 import os
 import json
+import math
 
 ### begin model to be loaded for prediction ###
-model_folder = "29_05_2020_14h_46m_02s_500chunks/"
+model_folder = "07_06_2020_19h_33m_32s_500chunks_baseline/"
 model_folder = os.path.join("models", model_folder)
 h5_file = glob.glob(model_folder + "*.h5")[0]
 
@@ -19,10 +20,10 @@ with open(param_dump_filename, 'r') as f:
     param_dict = json.load(f)
 ### end - model to be loaded for prediction ###
 
+#location of lenses, which are galaxies without lensing features
 lenses_path = "data/test_data/lenses/"
 test_data = glob.glob(lenses_path + "*_r_*.fits")
 num_test = len(test_data)
-
 
 loadsize = 100
 num_sources = load_data.num_sources
@@ -192,7 +193,7 @@ def select_indices(num, num_selected):
     return selected_indices
 
 
-def perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_sizes=None):
+def perturb_and_dscrop(img, ds_transforms, augmentation_params, target_sizes=None):
     if target_sizes is None:
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
 
@@ -201,7 +202,7 @@ def perturb_and_dscrop(params, img, ds_transforms, augmentation_params, target_s
     result = []
     for tform_ds, target_size in zip(ds_transforms, target_sizes):
         result.append(
-            fast_warp(params, img, tform_ds + tform_augment, output_shape=target_size, mode="reflect").astype("float32")
+            fast_warp(img, tform_ds + tform_augment, output_shape=target_size, mode="reflect").astype("float32")
         )  # crop here?
 
     return result
@@ -409,6 +410,48 @@ def call_model(model="resnet"):
 def build_resnet():
     model = resnet.ResnetBuilder.build_resnet_18((101,101,param_dict["nbands"]), 1)
     return model
+
+
+
+# Count the number of true positive, true negative, false positive and false negative in for a prediction vector relative to the label vector.
+def count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, threshold, beta_squarred, verbatim = False):
+    TP = 0 #true positive
+    TN = 0 #true negative
+    FP = 0 #false positive
+    FN = 0 #false negative
+
+    for idx, pred in enumerate(prediction_vector):
+        if pred >= threshold and y_test[idx] >= threshold:
+            TP += 1
+        if pred < threshold and y_test[idx] < threshold:
+            TN += 1
+        if pred >= threshold and y_test[idx] < threshold:
+            FP += 1
+        if pred < threshold and y_test[idx] >= threshold:
+            FN += 1
+
+    tot_count = TP + TN + FP + FN
+    
+    precision = TP/(TP + FP) if TP + FP != 0 else 0
+    recall    = TP/(TP + FN) if TP + FN != 0 else 0
+    fp_rate   = FP/(FP + TN) if FP + TN != 0 else 0
+    accuracy  = (TP + TN) / len(prediction_vector) if len(prediction_vector) != 0 else 0
+
+    F_beta    = (1+beta_squarred) * ((precision * recall) / ((beta_squarred * precision) + recall)) if ((beta_squarred * precision) + recall) else 0
+    
+    if verbatim:
+        if tot_count != len(prediction_vector):
+            print("Total count {} of (TP, TN, FP, FN) is not equal to the length of the prediction vector: {}".format(tot_count, len(prediction_vector)))
+
+        print("Total Count {}\n\tTP: {}, TN: {}, FP: {}, FN: {}".format(tot_count, TP, TN, FP, FN))
+        
+        print("precision = {}".format(precision))
+        print("recall    = {}".format(recall))
+        print("fp_rate   = {}".format(fp_rate))
+        print("accuracy  = {}".format(accuracy))
+        print("F beta    = {}".format(F_beta))
+
+    return TP, TN, FP, FN, precision, recall, fp_rate, accuracy, F_beta
 ######### END FUNCTIONS #########
 
 
@@ -448,7 +491,7 @@ augmented_data_gen_neg = realtime_augmented_data_gen_neg(
 
 augmented_data_gen_test_fixed = realtime_fixed_augmented_data_test(target_sizes=input_sizes)
 
-if False:
+if True:
     print("num_neg: {}".format(num_neg))
     print("num_sources: {}".format(num_sources))
     print("num_lenses: {}".format(num_lenses)) # is the test data in this case aswell, to be counted as negatives, because there are no lensing features in them.
@@ -458,13 +501,14 @@ if True:
     neg_data, labels_neg = next(augmented_data_gen_neg)[0]
     neg_data_lenses, labels_neg_lenses = next(augmented_data_gen_test_fixed)[0]             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
 
-if False:
+if True:
     print("pos data labels: {}".format(str(labels_pos)))
     print("neg data labels: {}".format(str(labels_neg)))
     print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
 
 if True:
-    x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)
+    #the data is not normalized, therefore divide by 255.0
+    x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)/255.0
     print(x_test.shape)
     y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
     print(y_test.shape)
@@ -476,14 +520,24 @@ multi_model = call_model(model="resnet")
 multi_model.load_weights(h5_file)
 
 prediction_vector = multi_model.predict(x_test)
-print("prediction vector: {}".format(prediction_vector))
+print("Length prediction vector: {}".format(len(prediction_vector)))
 
-# for idx in range(len(labels_neg)):
-#     img = (neg_data_lenses[idx])
-#     img = np.squeeze(img, axis=2)
-#     plt.imshow(img/255.0)
-#     plt.show()
+beta_squarred = 0.03
+stepsize = 0.01
+threshold_range = np.arange(stepsize,1.0,stepsize)
 
+f_betas = []
+for p_threshold in threshold_range:
+    (TP, TN, FP, FN, precision, recall, fp_rate, accuracy, F_beta) = count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, p_threshold, beta_squarred)
+    f_betas.append(F_beta)
 
-print("DONE")
+threshold_range = list(threshold_range)
 
+plt.plot(threshold_range, f_betas)
+plt.xlabel("p threshold")
+plt.ylabel("F")
+plt.title("F_beta score - Beta = {0:.2f}".format(math.sqrt(beta_squarred)))
+full_path_fBeta_figure = os.path.join(model_folder, "f_beta_graph.png")
+plt.savefig(full_path_fBeta_figure)
+print("figure saved: {}".format(full_path_fBeta_figure))
+plt.show()
