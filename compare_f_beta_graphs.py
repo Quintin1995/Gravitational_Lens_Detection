@@ -22,6 +22,3 @@ plt.xlabel("p_threshold")
 plt.ylabel("F")
 plt.title("F beta scores")
 plt.show()
-
-
-xdfjkld=2
