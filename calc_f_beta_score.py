@@ -12,7 +12,7 @@ import math
 import csv
 
 ### begin model to be loaded for prediction ###
-model_folder = "07_06_2020_19h_33m_32s_500chunks_baseline/"
+model_folder = "08_06_2020_16h_11m_59s_approx1100chunks/"
 model_folder = os.path.join("models", model_folder)
 h5_file = glob.glob(model_folder + "*.h5")[0]
 
