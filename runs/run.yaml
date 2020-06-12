@@ -6,7 +6,7 @@ path_trained_folder: weights_only_full_trained        #string - just a folder na
 filename_trained_weights: resnet_single_newtr_last_last_weights_only.h5   #string - filename of trained network weights
 
 model_name: first_model     # string
-num_chunks: 1250             # int     determines how long the training session will last
+num_chunks: 2000             # int     determines how long the training session will last
 chunk_size: 1280            # int     was 1280 originally
 batch_size: 64              # int
 num_batch_augm: 20          # int
