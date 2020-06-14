@@ -407,7 +407,7 @@ def realtime_augmented_data_gen_pos(
     range_max=0.5,
 ):
 
-    start_time = time.time()
+    
     """
     new version, using Pool.imap instead of Pool.map, to avoid the data structure conversion
     from lists to numpy arrays afterwards.
@@ -417,6 +417,7 @@ def realtime_augmented_data_gen_pos(
         target_sizes = [(53, 53) for _ in range(len(ds_transforms))]
     n = 0
     while True:
+        start_time = time.time()
         if num_chunks is not None and n >= num_chunks:
             break
         selected_indices_sources = select_indices(num_sources, chunk_size)
@@ -463,7 +464,7 @@ def realtime_augmented_data_gen_pos(
         pool2.close()
         pool2.join()
         target_arrays_pos.append(labels.astype(np.int32))
-        print("chunk creation took:{0:.3f}".format(time.time() - start_time))
+        print("\nchunk creation took:{0:.3f}".format(time.time() - start_time))
         yield target_arrays_pos, chunk_size
         n += 1
 

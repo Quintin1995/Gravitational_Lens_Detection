@@ -44,9 +44,9 @@ from parameters import Parameters
 from utils import *
 import csv
 import matplotlib.pyplot as plt
-import tensorflow as tf
+# import tensorflow as tf
 
-print(tf.config.list_physical_devices('GPU'))
+# print(tf.config.list_physical_devices('GPU'))
 
 # load the settings dictionary in order to start a run.
 settings = load_run_yaml("runs/run.yaml")
