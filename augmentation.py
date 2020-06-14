@@ -406,6 +406,8 @@ def realtime_augmented_data_gen_pos(
     range_min=0.02,
     range_max=0.5,
 ):
+
+    start_time = time.time()
     """
     new version, using Pool.imap instead of Pool.map, to avoid the data structure conversion
     from lists to numpy arrays afterwards.
@@ -461,6 +463,7 @@ def realtime_augmented_data_gen_pos(
         pool2.close()
         pool2.join()
         target_arrays_pos.append(labels.astype(np.int32))
+        print("chunk creation took:{0:.3f}".format(time.time() - start_time))
         yield target_arrays_pos, chunk_size
         n += 1
 

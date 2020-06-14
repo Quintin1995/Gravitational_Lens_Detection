@@ -44,7 +44,9 @@ from parameters import Parameters
 from utils import *
 import csv
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
+print(tf.config.list_physical_devices('GPU'))
 
 # load the settings dictionary in order to start a run.
 settings = load_run_yaml("runs/run.yaml")
@@ -148,11 +150,12 @@ def main(
                     y_train = y_train.astype(np.int32)
                     y_train = np.expand_dims(y_train, axis=1)
                     batches = 0
+                    start_chunk_processing_time = time.time()
                     for batch in iterate_minibatches(X_train, y_train, batch_size, shuffle=True):
                         X_batch, y_batch = batch
                         history = multi_model.fit(X_batch / 255.0 - params.avg_img, y_batch)
                         batches += 1
-                    
+                    print("Chunck neural net time: {0:.3f} seconds".format(time.time() - start_chunk_processing_time), flush=True)
                     #write results to csv for later use
                     writer.writerow([str(chunk), str(history.history["loss"][0]), str(history.history["binary_accuracy"][0])])
                     
@@ -168,7 +171,7 @@ def main(
                     X_train = None
                     y_train = None
                     print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks), flush=True)
-                    print("Chunck took {0:.3f} seconds".format(time.time() - start_time), flush=True)
+                   
 
             except KeyboardInterrupt:
                 multi_model.save_weights(params.full_path_of_weights)
