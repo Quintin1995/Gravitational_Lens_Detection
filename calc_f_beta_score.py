@@ -463,15 +463,15 @@ def count_TP_TN_FP_FN_and_FB(prediction_vector, y_test, threshold, beta_squarred
     
     if verbatim:
         if tot_count != len(prediction_vector):
-            print("Total count {} of (TP, TN, FP, FN) is not equal to the length of the prediction vector: {}".format(tot_count, len(prediction_vector)))
+            print("Total count {} of (TP, TN, FP, FN) is not equal to the length of the prediction vector: {}".format(tot_count, len(prediction_vector)), flush=True)
 
-        print("Total Count {}\n\tTP: {}, TN: {}, FP: {}, FN: {}".format(tot_count, TP, TN, FP, FN))
+        print("Total Count {}\n\tTP: {}, TN: {}, FP: {}, FN: {}".format(tot_count, TP, TN, FP, FN), flush=True)
         
-        print("precision = {}".format(precision))
-        print("recall    = {}".format(recall))
-        print("fp_rate   = {}".format(fp_rate))
-        print("accuracy  = {}".format(accuracy))
-        print("F beta    = {}".format(F_beta))
+        print("precision = {}".format(precision), flush=True)
+        print("recall    = {}".format(recall), flush=True)
+        print("fp_rate   = {}".format(fp_rate), flush=True)
+        print("accuracy  = {}".format(accuracy), flush=True)
+        print("F beta    = {}".format(F_beta), flush=True)
 
     return TP, TN, FP, FN, precision, recall, fp_rate, accuracy, F_beta
 ######### END FUNCTIONS #########
@@ -491,9 +491,9 @@ augmented_data_gen_neg = realtime_augmented_data_gen_neg(num_chunks=num_chunks, 
 augmented_data_gen_test_fixed = realtime_fixed_augmented_data_test(target_sizes=input_sizes)
 
 if True:
-    print("num_neg: {}".format(num_neg))
-    print("num_sources: {}".format(num_sources))
-    print("num_lenses: {}".format(num_lenses)) # is the test data in this case aswell, to be counted as negatives, because there are no lensing features in them.
+    print("num_neg: {}".format(num_neg), flush=True)
+    print("num_sources: {}".format(num_sources), flush=True)
+    print("num_lenses: {}".format(num_lenses), flush=True) # is the test data in this case aswell, to be counted as negatives, because there are no lensing features in them.
 
 if True:
     pos_data, labels_pos = next(augmented_data_gen_pos)[0]
@@ -501,16 +501,16 @@ if True:
     neg_data_lenses, labels_neg_lenses = next(augmented_data_gen_test_fixed)[0]             #this is the lenses set, meaning: that these are images of galaxies without any lensing features (no source is applied to it). the naming is confusing, i know, but i just went with the terminology already used in the rest of the existing code.
 
 if True:
-    print("pos data labels: {}".format(str(labels_pos)))
-    print("neg data labels: {}".format(str(labels_neg)))
-    print("neg data lenses labels: {}".format(str(labels_neg_lenses)))
+    print("pos data labels: {}".format(str(labels_pos)), flush=True)
+    print("neg data labels: {}".format(str(labels_neg)), flush=True)
+    print("neg data lenses labels: {}".format(str(labels_neg_lenses)), flush=True)
 
 if True:
     #the data is not normalized, therefore divide by 255.0
     x_test = np.concatenate([pos_data, neg_data, neg_data_lenses], axis=0)/255.0
-    print(x_test.shape)
+    print(x_test.shape, flush=True)
     y_test = np.concatenate([labels_pos, labels_neg, labels_neg_lenses], axis=0)
-    print(y_test.shape)
+    print(y_test.shape, flush=True)
 
 # load a keras model
 multi_model = call_model(model="resnet")
@@ -519,7 +519,7 @@ multi_model = call_model(model="resnet")
 multi_model.load_weights(h5_file)
 
 prediction_vector = multi_model.predict(x_test)
-print("Length prediction vector: {}".format(len(prediction_vector)))
+print("Length prediction vector: {}".format(len(prediction_vector)), flush=True)
 
 beta_squarred = 0.03
 stepsize = 0.01
@@ -534,7 +534,7 @@ with open(f_beta_full_path, 'w', newline='') as f_beta_file:
         f_betas.append(F_beta)
         writer.writerow([str(p_threshold), str(TP), str(TN), str(FP), str(FN), str(precision), str(recall), str(fp_rate), str(accuracy), str(F_beta)])
 
-print("saved csv with f_beta scores to: ".format(f_beta_full_path))
+print("saved csv with f_beta scores to: ".format(f_beta_full_path), flush=True)
 
 plt.plot(list(threshold_range), f_betas)
 plt.xlabel("p threshold")
@@ -542,5 +542,5 @@ plt.ylabel("F")
 plt.title("F_beta score - Beta = {0:.2f}".format(math.sqrt(beta_squarred)))
 
 plt.savefig(full_path_fBeta_figure)
-print("figure saved: {}".format(full_path_fBeta_figure))
+print("figure saved: {}".format(full_path_fBeta_figure), flush=True)
 plt.show()

@@ -34,10 +34,10 @@ def load_run_yaml(yaml_run_path):
     #opens run.yaml and load all the settings into a dictionary.
     with open(yaml_run_path) as file:
         settings = yaml.load(file)
-        print("\nSettings: {}".format(yaml_run_path))
+        print("\nSettings: {}".format(yaml_run_path), flush=True)
         for i in settings:
-            print(str(i) + ": " + str(settings[i]))
-        print("\nAll settings loaded.\n\n")
+            print(str(i) + ": " + str(settings[i]), flush=True)
+        print("\nAll settings loaded.\n\n", flush=True)
         return settings
 
 
@@ -67,7 +67,7 @@ def plot_history(history, settings):
     plt.title('Training and validation loss')
     plt.legend()
     plt.savefig(settings.full_path_of_figure)
-    print("\nsaved figure to: " + settings.full_path_of_figure)
+    print("\nsaved figure to: " + settings.full_path_of_figure, flush=True)
 
 
 
@@ -91,4 +91,4 @@ def save_loss_and_acc_figure(loss_per_chunk, bin_acc_per_chunk, params):
     plt.title('Training Loss')
     plt.legend()
     plt.savefig(params.full_path_of_figure)
-    print("\nsaved Loss and Accuracy figure to: {}".format(params.full_path_of_figure))
+    print("\nsaved Loss and Accuracy figure to: {}".format(params.full_path_of_figure), flush=True)

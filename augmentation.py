@@ -66,7 +66,7 @@ def augmentation_setup(params):
     )  # this is an identity transform by default
     ds_transforms_default = [tform_identity]
     ds_transforms = ds_transforms_default  # CHANGE THIS LINE to select downsampling transforms to be used - WHAT????
-    print("augmentation globals are set")
+    print("augmentation globals are set", flush=True)
 
 
 ## UTILITIES ##

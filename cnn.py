@@ -69,7 +69,7 @@ def main(
 ):
     #create a model (neural network)
     multi_model = call_model(params, model=model)
-    print("Model loaded: {}".format(model))
+    print("Model loaded: {}".format(model), flush=True)
     
     if mode == "train":
         #create a csv logger that will store the history of the .fit function into a .csv file
@@ -167,39 +167,26 @@ def main(
                     #empty the train data
                     X_train = None
                     y_train = None
-                    print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks))
-                    print("Chunck took {0:.3f} seconds".format(time.time() - start_time))
+                    print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks), flush=True)
+                    print("Chunck took {0:.3f} seconds".format(time.time() - start_time), flush=True)
 
             except KeyboardInterrupt:
                 multi_model.save_weights(params.full_path_of_weights)
-                print("interrupted by KEYBOARD!")
-                print("saved weights to: {}".format(params.full_path_of_weights))
+                print("interrupted by KEYBOARD!", flush=True)
+                print("saved weights to: {}".format(params.full_path_of_weights), flush=True)
             end_time = time.time()
 
             multi_model.save_weights(params.full_path_of_weights)
-            print("\nSaved weights to: {}".format(params.full_path_of_weights))
-            print("\nSaved results to: {}".format(params.full_path_of_history))
+            print("\nSaved weights to: {}".format(params.full_path_of_weights), flush=True)
+            print("\nSaved results to: {}".format(params.full_path_of_history), flush=True)
             final_time = end_time - actual_begin_time
-            print("\nTotal time employed ", load_data.hms( final_time))
+            print("\nTotal time employed ", load_data.hms( final_time), flush=True)
 
     if mode == "predict":
         if nbands == 3:
             augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(params = params, target_sizes=input_sizes)  # ,normalize=normalize)
         else:
             augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(params = params, target_sizes=input_sizes)
-
-        #temp
-        chunk, size_chunk = next(augmented_data_gen_test_fixed)
-        print(len(chunk))
-        print(type(chunk[0]))
-        print(chunk[0])
-        print(chunk[0].shape)
-
-        for i in range(size_chunk):
-            print("img {}/{}".format(i, size_chunk))
-            plt.imshow(chunk[0][i]/255.0)
-            plt.show()
-        #end temp
 
         #load a trained model
         multi_model.load_weights(params.full_path_predict_weights)
@@ -219,7 +206,7 @@ def main(
                 preds = np.mean([pred1, pred2, pred3, pred4], axis=0)
                 preds = preds.tolist()
                 predictions = predictions + preds
-                print("done with predict chunk: {}".format(e))
+                print("done with predict chunk: {}".format(e), flush=True)
         else:
             for e, (chunk_data_test, chunk_length_test) in enumerate(
                 augmented_data_gen_test_fixed
@@ -247,8 +234,6 @@ def main(
         f.write(x)
         f.write("\n")
         f.close()
-
-        print("Translation:\nData saved in the file pred_my_model.csv")
 
 ############### end functions #######################
 
