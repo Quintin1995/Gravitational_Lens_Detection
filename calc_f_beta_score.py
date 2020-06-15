@@ -12,7 +12,7 @@ import math
 import csv
 
 ### begin model to be loaded for prediction ###
-model_folder = "08_06_2020_16h_11m_59s_approx1100chunks/"
+model_folder = "resnet_single_newtr_last_last_weights_only/"
 model_folder = os.path.join("models", model_folder)
 h5_file = glob.glob(model_folder + "*.h5")[0]
 
@@ -22,9 +22,15 @@ full_path_fBeta_figure = os.path.join(model_folder, "f_beta_graph.png")
 # file name and path of csv where f_beta results will be stored in csv format. This includes scores, such as TP, TN, FP, FN, accuracy, recall, precision.
 f_beta_full_path = os.path.join(model_folder, "f_beta_results.csv")
 
-param_dump_filename = glob.glob(model_folder + "*.json")[0]
-with open(param_dump_filename, 'r') as f:
-    param_dict = json.load(f)
+this_model_has_param_file = False
+
+if this_model_has_param_file:
+    param_dump_filename = glob.glob(model_folder + "*.json")[0]
+    with open(param_dump_filename, 'r') as f:
+        param_dict = json.load(f)
+if not this_model_has_param_file:
+    param_dict = {}
+    param_dict["nbands"] = 3
 ### end - model to be loaded for prediction ###
 
 #location of lenses, which are galaxies without lensing features
