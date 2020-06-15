@@ -145,6 +145,14 @@ def main(
                     y_train_neg = chunk_data_neg.pop()
                     X_train_neg = chunk_data_neg
 
+                    if False:               #just to view some images positive or negative
+                        imgs = chunk_data_pos[0]
+                        imgs = np.squeeze(imgs)
+                        for img in imgs:
+                            plt.imshow(img/255.0)
+                            plt.show()
+                    
+
                     X_train = np.concatenate((X_train_pos[0], X_train_neg[0]))
                     y_train = np.concatenate((y_train_pos, y_train_neg))
                     y_train = y_train.astype(np.int32)
