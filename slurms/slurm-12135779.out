@@ -1,0 +1,64 @@
+Restoring modules from user's TRY1
+Lmod Warning: The following modules were not loaded: HDF5 Szip TensorFlow h5py
+
+
+
+
+Lmod Warning: One or more modules in your TRY1 collection have changed:
+"Python".
+To see the contents of this collection execute:
+  $ module describe TRY1
+To rebuild the collection, load the modules you wish, then execute:
+  $ module save TRY1
+If you no longer want this module collection execute:
+  $ rm ~/.lmod.d/TRY1
+
+For more information execute 'module help' or see http://lmod.readthedocs.org/
+No change in modules loaded.
+
+
+
+
+Traceback (most recent call last):
+  File "cnn.py", line 1, in <module>
+    from tensorflow.keras.preprocessing import image
+ModuleNotFoundError: No module named 'tensorflow'
+
+
+###############################################################################
+Peregrine Cluster
+Job 12135779 for user 's2701782'
+Finished at: Sun Jun 14 12:53:11 CEST 2020
+
+Job details:
+============
+
+Name                : batch-gpu.txt
+User                : s2701782
+Partition           : gpu
+Nodes               : pg-gpu42
+Cores               : 12
+State               : FAILED
+Submit              : 2020-06-14T12:52:38
+Start               : 2020-06-14T12:53:06
+End                 : 2020-06-14T12:53:10
+Reserved walltime   : 15:00:00
+Used walltime       : 00:00:04
+Used CPU time       : 00:00:01 (efficiency:  4.16%)
+% User (Computation): 69.15%
+% System (I/O)      : 30.80%
+Mem reserved        : 25000M/node
+Max Mem used        : 0.00  (pg-gpu42)
+Max Disk Write      : 0.00  (pg-gpu42)
+Max Disk Read       : 0.00  (pg-gpu42)
+Average GPU usage   : 0.0% (pg-gpu42)
+
+
+Acknowledgements:
+=================
+
+Please see this page for information about acknowledging Peregrine in your publications:
+
+https://wiki.hpc.rug.nl/peregrine/additional_information/scientific_output
+
+################################################################################

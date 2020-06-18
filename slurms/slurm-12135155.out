@@ -1,0 +1,131 @@
+Lmod has detected the following error: The following module(s) are unknown:
+"TensorFlow/2.0.0-foss-2019a-Python-3.7.2"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore-cache load "TensorFlow/2.0.0-foss-2019a-Python-3.7.2"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+
+The following have been reloaded with a version change:
+  1) CUDA/10.1.243-GCC-8.3.0 => CUDA/10.1.105-GCC-8.2.0-2.31.1
+  2) FFTW/3.3.8-gompic-2019b => FFTW/3.3.8-gompic-2019a
+  3) GCC/8.3.0 => GCC/8.2.0-2.31.1
+  4) GCCcore/8.3.0 => GCCcore/8.2.0
+  5) GMP/6.1.2-GCCcore-8.3.0 => GMP/6.1.2-GCCcore-8.2.0
+  6) OpenBLAS/0.3.7-GCC-8.3.0 => OpenBLAS/0.3.5-GCC-8.2.0-2.31.1
+  7) OpenMPI/3.1.4-gcccuda-2019b => OpenMPI/3.1.3-gcccuda-2019a
+  8) Python/3.7.4-GCCcore-8.3.0 => Python/3.7.2-GCCcore-8.2.0
+  9) SQLite/3.29.0-GCCcore-8.3.0 => SQLite/3.27.2-GCCcore-8.2.0
+ 10) ScaLAPACK/2.0.2-gompic-2019b => ScaLAPACK/2.0.2-gompic-2019a-OpenBLAS-0.3.5
+ 11) SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4 => SciPy-bundle/2019.03-fosscuda-2019a
+ 12) Tcl/8.6.9-GCCcore-8.3.0 => Tcl/8.6.9-GCCcore-8.2.0
+ 13) Tk/8.6.9-GCCcore-8.3.0 => Tk/8.6.9-GCCcore-8.2.0
+ 14) Tkinter/3.7.4-GCCcore-8.3.0 => Tkinter/3.7.2-GCCcore-8.2.0
+ 15) X11/20190717-GCCcore-8.3.0 => X11/20190311-GCCcore-8.2.0
+ 16) XZ/5.2.4-GCCcore-8.3.0 => XZ/5.2.4-GCCcore-8.2.0
+ 17) binutils/2.32-GCCcore-8.3.0 => binutils/2.31.1-GCCcore-8.2.0
+ 18) bzip2/1.0.8-GCCcore-8.3.0 => bzip2/1.0.6-GCCcore-8.2.0
+ 19) expat/2.2.7-GCCcore-8.3.0 => expat/2.2.6-GCCcore-8.2.0
+ 20) fontconfig/2.13.1-GCCcore-8.3.0 => fontconfig/2.13.1-GCCcore-8.2.0
+ 21) fosscuda/2019b => fosscuda/2019a
+ 22) freetype/2.10.1-GCCcore-8.3.0 => freetype/2.9.1-GCCcore-8.2.0
+ 23) gcccuda/2019b => gcccuda/2019a
+ 24) gompic/2019b => gompic/2019a
+ 25) hwloc/1.11.12-GCCcore-8.3.0 => hwloc/1.11.11-GCCcore-8.2.0
+ 26) libffi/3.2.1-GCCcore-8.3.0 => libffi/3.2.1-GCCcore-8.2.0
+ 27) libpciaccess/0.14-GCCcore-8.3.0 => libpciaccess/0.14-GCCcore-8.2.0
+ 28) libpng/1.6.37-GCCcore-8.3.0 => libpng/1.6.36-GCCcore-8.2.0
+ 29) libreadline/8.0-GCCcore-8.3.0 => libreadline/8.0-GCCcore-8.2.0
+ 30) libxml2/2.9.9-GCCcore-8.3.0 => libxml2/2.9.8-GCCcore-8.2.0
+ 31) matplotlib/3.1.1-fosscuda-2019b-Python-3.7.4 => matplotlib/3.0.3-fosscuda-2019a-Python-3.7.2
+ 32) ncurses/6.1-GCCcore-8.3.0 => ncurses/6.1-GCCcore-8.2.0
+ 33) numactl/2.0.12-GCCcore-8.3.0 => numactl/2.0.12-GCCcore-8.2.0
+ 34) util-linux/2.34-GCCcore-8.3.0 => util-linux/2.33-GCCcore-8.2.0
+ 35) zlib/1.2.11-GCCcore-8.3.0 => zlib/1.2.11-GCCcore-8.2.0
+
+
+The following have been reloaded with a version change:
+  1) CUDA/10.1.105-GCC-8.2.0-2.31.1 => CUDA/10.1.243-GCC-8.3.0
+  2) FFTW/3.3.8-gompic-2019a => FFTW/3.3.8-gompic-2019b
+  3) GCC/8.2.0-2.31.1 => GCC/8.3.0
+  4) GCCcore/8.2.0 => GCCcore/8.3.0
+  5) GMP/6.1.2-GCCcore-8.2.0 => GMP/6.1.2-GCCcore-8.3.0
+  6) OpenBLAS/0.3.5-GCC-8.2.0-2.31.1 => OpenBLAS/0.3.7-GCC-8.3.0
+  7) OpenMPI/3.1.3-gcccuda-2019a => OpenMPI/3.1.4-gcccuda-2019b
+  8) Python/3.7.2-GCCcore-8.2.0 => Python/3.7.4-GCCcore-8.3.0
+  9) SQLite/3.27.2-GCCcore-8.2.0 => SQLite/3.29.0-GCCcore-8.3.0
+ 10) ScaLAPACK/2.0.2-gompic-2019a-OpenBLAS-0.3.5 => ScaLAPACK/2.0.2-gompic-2019b
+ 11) SciPy-bundle/2019.03-fosscuda-2019a => SciPy-bundle/2019.10-fosscuda-2019b-Python-3.7.4
+ 12) Tcl/8.6.9-GCCcore-8.2.0 => Tcl/8.6.9-GCCcore-8.3.0
+ 13) Tk/8.6.9-GCCcore-8.2.0 => Tk/8.6.9-GCCcore-8.3.0
+ 14) Tkinter/3.7.2-GCCcore-8.2.0 => Tkinter/3.7.4-GCCcore-8.3.0
+ 15) X11/20190311-GCCcore-8.2.0 => X11/20190717-GCCcore-8.3.0
+ 16) XZ/5.2.4-GCCcore-8.2.0 => XZ/5.2.4-GCCcore-8.3.0
+ 17) binutils/2.31.1-GCCcore-8.2.0 => binutils/2.32-GCCcore-8.3.0
+ 18) bzip2/1.0.6-GCCcore-8.2.0 => bzip2/1.0.8-GCCcore-8.3.0
+ 19) expat/2.2.6-GCCcore-8.2.0 => expat/2.2.7-GCCcore-8.3.0
+ 20) fontconfig/2.13.1-GCCcore-8.2.0 => fontconfig/2.13.1-GCCcore-8.3.0
+ 21) fosscuda/2019a => fosscuda/2019b
+ 22) freetype/2.9.1-GCCcore-8.2.0 => freetype/2.10.1-GCCcore-8.3.0
+ 23) gcccuda/2019a => gcccuda/2019b
+ 24) gompic/2019a => gompic/2019b
+ 25) hwloc/1.11.11-GCCcore-8.2.0 => hwloc/1.11.12-GCCcore-8.3.0
+ 26) libffi/3.2.1-GCCcore-8.2.0 => libffi/3.2.1-GCCcore-8.3.0
+ 27) libpciaccess/0.14-GCCcore-8.2.0 => libpciaccess/0.14-GCCcore-8.3.0
+ 28) libpng/1.6.36-GCCcore-8.2.0 => libpng/1.6.37-GCCcore-8.3.0
+ 29) libreadline/8.0-GCCcore-8.2.0 => libreadline/8.0-GCCcore-8.3.0
+ 30) libxml2/2.9.8-GCCcore-8.2.0 => libxml2/2.9.9-GCCcore-8.3.0
+ 31) matplotlib/3.0.3-fosscuda-2019a-Python-3.7.2 => matplotlib/3.1.1-fosscuda-2019b-Python-3.7.4
+ 32) ncurses/6.1-GCCcore-8.2.0 => ncurses/6.1-GCCcore-8.3.0
+ 33) numactl/2.0.12-GCCcore-8.2.0 => numactl/2.0.12-GCCcore-8.3.0
+ 34) util-linux/2.33-GCCcore-8.2.0 => util-linux/2.34-GCCcore-8.3.0
+ 35) zlib/1.2.11-GCCcore-8.2.0 => zlib/1.2.11-GCCcore-8.3.0
+
+Traceback (most recent call last):
+  File "cnn.py", line 1, in <module>
+    from tensorflow.keras.preprocessing import image
+ModuleNotFoundError: No module named 'tensorflow'
+
+
+###############################################################################
+Peregrine Cluster
+Job 12135155 for user 's2701782'
+Finished at: Sun Jun 14 12:27:47 CEST 2020
+
+Job details:
+============
+
+Name                : batch-gpu.txt
+User                : s2701782
+Partition           : gpu
+Nodes               : pg-gpu42
+Cores               : 12
+State               : FAILED
+Submit              : 2020-06-14T12:27:22
+Start               : 2020-06-14T12:27:38
+End                 : 2020-06-14T12:27:47
+Reserved walltime   : 15:00:00
+Used walltime       : 00:00:09
+Used CPU time       : 00:00:05 (efficiency:  4.72%)
+% User (Computation): 69.11%
+% System (I/O)      : 30.87%
+Mem reserved        : 25000M/node
+Max Mem used        : 0.00  (pg-gpu42)
+Max Disk Write      : 0.00  (pg-gpu42)
+Max Disk Read       : 0.00  (pg-gpu42)
+Average GPU usage   : 0.0% (pg-gpu42)
+
+
+Acknowledgements:
+=================
+
+Please see this page for information about acknowledging Peregrine in your publications:
+
+https://wiki.hpc.rug.nl/peregrine/additional_information/scientific_output
+
+################################################################################

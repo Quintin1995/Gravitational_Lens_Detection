@@ -242,30 +242,30 @@ class ResnetBuilder(object):
         )(flatten1)
 
         model = Model(inputs=input, outputs=dense)
-        print(model.summary())
+        print(model.summary(), flush=True)
         return model
 
     @staticmethod
     def build_resnet_18(input_shape, num_outputs):
-        print("Building Resnet 18")
+        print("Building Resnet 18", flush=True)
         return ResnetBuilder.build(input_shape, num_outputs, basic_block, [2, 2, 2, 2])
 
     @staticmethod
     def build_resnet_34(input_shape, num_outputs):
-        print("Building Resnet 34")
+        print("Building Resnet 34", flush=True)
         return ResnetBuilder.build(input_shape, num_outputs, basic_block, [3, 4, 6, 3])
 
     @staticmethod
     def build_resnet_50(input_shape, num_outputs):
-        print("Building Resnet 50")
+        print("Building Resnet 50", flush=True)
         return ResnetBuilder.build(input_shape, num_outputs, bottleneck, [3, 4, 6, 3])
 
     @staticmethod
     def build_resnet_101(input_shape, num_outputs):
-        print("Building Resnet 101")
+        print("Building Resnet 101", flush=True)
         return ResnetBuilder.build(input_shape, num_outputs, bottleneck, [3, 4, 23, 3])
 
     @staticmethod
     def build_resnet_152(input_shape, num_outputs):
-        print("Building Resnet 152")
+        print("Building Resnet 152", flush=True)
         return ResnetBuilder.build(input_shape, num_outputs, bottleneck, [3, 8, 36, 3])

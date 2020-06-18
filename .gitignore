@@ -130,6 +130,7 @@ dmypy.json
 
 #folders
 data/
+slurms/
 models/
 weights_only_full_trained/
 

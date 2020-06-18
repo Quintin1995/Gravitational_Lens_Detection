@@ -44,6 +44,9 @@ from parameters import Parameters
 from utils import *
 import csv
 import matplotlib.pyplot as plt
+# import tensorflow as tf
+
+# print(tf.config.list_physical_devices('GPU'))
 
 # load the settings dictionary in order to start a run.
 settings = load_run_yaml("runs/run.yaml")
@@ -68,7 +71,7 @@ def main(
 ):
     #create a model (neural network)
     multi_model = call_model(params, model=model)
-    print("Model loaded: {}".format(model))
+    print("Model loaded: {}".format(model), flush=True)
     
     if mode == "train":
         #create a csv logger that will store the history of the .fit function into a .csv file
@@ -142,16 +145,25 @@ def main(
                     y_train_neg = chunk_data_neg.pop()
                     X_train_neg = chunk_data_neg
 
+                    if False:               #just to view some images positive or negative
+                        imgs = chunk_data_pos[0]
+                        imgs = np.squeeze(imgs)
+                        for img in imgs:
+                            plt.imshow(img/255.0)
+                            plt.show()
+                    
+
                     X_train = np.concatenate((X_train_pos[0], X_train_neg[0]))
                     y_train = np.concatenate((y_train_pos, y_train_neg))
                     y_train = y_train.astype(np.int32)
                     y_train = np.expand_dims(y_train, axis=1)
                     batches = 0
+                    start_chunk_processing_time = time.time()
                     for batch in iterate_minibatches(X_train, y_train, batch_size, shuffle=True):
                         X_batch, y_batch = batch
                         history = multi_model.fit(X_batch / 255.0 - params.avg_img, y_batch)
                         batches += 1
-                    
+                    print("Chunck neural net time: {0:.3f} seconds".format(time.time() - start_chunk_processing_time), flush=True)
                     #write results to csv for later use
                     writer.writerow([str(chunk), str(history.history["loss"][0]), str(history.history["binary_accuracy"][0])])
                     
@@ -166,39 +178,26 @@ def main(
                     #empty the train data
                     X_train = None
                     y_train = None
-                    print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks))
-                    print("Chunck took {0:.3f} seconds".format(time.time() - start_time))
+                    print("Chunck {}/{} has been trained".format(chunk+1, params.num_chunks), flush=True)
+                   
 
             except KeyboardInterrupt:
                 multi_model.save_weights(params.full_path_of_weights)
-                print("interrupted by KEYBOARD!")
-                print("saved weights to: {}".format(params.full_path_of_weights))
+                print("interrupted by KEYBOARD!", flush=True)
+                print("saved weights to: {}".format(params.full_path_of_weights), flush=True)
             end_time = time.time()
 
             multi_model.save_weights(params.full_path_of_weights)
-            print("\nSaved weights to: {}".format(params.full_path_of_weights))
-            print("\nSaved results to: {}".format(params.full_path_of_history))
+            print("\nSaved weights to: {}".format(params.full_path_of_weights), flush=True)
+            print("\nSaved results to: {}".format(params.full_path_of_history), flush=True)
             final_time = end_time - actual_begin_time
-            print("\nTotal time employed ", load_data.hms( final_time))
+            print("\nTotal time employed ", load_data.hms( final_time), flush=True)
 
     if mode == "predict":
         if nbands == 3:
             augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test_col(params = params, target_sizes=input_sizes)  # ,normalize=normalize)
         else:
             augmented_data_gen_test_fixed = ra.realtime_fixed_augmented_data_test(params = params, target_sizes=input_sizes)
-
-        #temp
-        chunk, size_chunk = next(augmented_data_gen_test_fixed)
-        print(len(chunk))
-        print(type(chunk[0]))
-        print(chunk[0])
-        print(chunk[0].shape)
-
-        for i in range(size_chunk):
-            print("img {}/{}".format(i, size_chunk))
-            plt.imshow(chunk[0][i]/255.0)
-            plt.show()
-        #end temp
 
         #load a trained model
         multi_model.load_weights(params.full_path_predict_weights)
@@ -218,7 +217,7 @@ def main(
                 preds = np.mean([pred1, pred2, pred3, pred4], axis=0)
                 preds = preds.tolist()
                 predictions = predictions + preds
-                print("done with predict chunk: {}".format(e))
+                print("done with predict chunk: {}".format(e), flush=True)
         else:
             for e, (chunk_data_test, chunk_length_test) in enumerate(
                 augmented_data_gen_test_fixed
@@ -246,8 +245,6 @@ def main(
         f.write(x)
         f.write("\n")
         f.close()
-
-        print("Translation:\nData saved in the file pred_my_model.csv")
 
 ############### end functions #######################
 
