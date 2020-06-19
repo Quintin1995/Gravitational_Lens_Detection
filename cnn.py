@@ -161,6 +161,7 @@ def main(
                     start_chunk_processing_time = time.time()
                     for batch in iterate_minibatches(X_train, y_train, batch_size, shuffle=True):
                         X_batch, y_batch = batch
+
                         history = multi_model.fit(X_batch / 255.0 - params.avg_img, y_batch)
                         batches += 1
                     print("Chunck neural net time: {0:.3f} seconds".format(time.time() - start_chunk_processing_time), flush=True)
