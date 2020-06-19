@@ -12,7 +12,7 @@ import math
 import csv
 
 ### begin model to be loaded for prediction ###
-model_folder = "resnet_single_newtr_last_last_weights_only/"
+model_folder = "18_06_2020_12h_15m_09s_5000chunks/"
 model_folder = os.path.join("models", model_folder)
 h5_file = glob.glob(model_folder + "*.h5")[0]
 
@@ -22,7 +22,7 @@ full_path_fBeta_figure = os.path.join(model_folder, "f_beta_graph.png")
 # file name and path of csv where f_beta results will be stored in csv format. This includes scores, such as TP, TN, FP, FN, accuracy, recall, precision.
 f_beta_full_path = os.path.join(model_folder, "f_beta_results.csv")
 
-this_model_has_param_file = False
+this_model_has_param_file = True
 
 if this_model_has_param_file:
     param_dump_filename = glob.glob(model_folder + "*.json")[0]
