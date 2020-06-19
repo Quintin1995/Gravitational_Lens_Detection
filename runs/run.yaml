@@ -26,7 +26,7 @@ range_min: 0.02             # float
 range_max: 0.30             # float
 
 #more parameters
-buffer_size: 10             # int
+buffer_size: 5             # int
 avg_img: 0                  # int
 
 #default augmentation parameters
